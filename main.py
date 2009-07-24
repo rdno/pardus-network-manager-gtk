@@ -1,3 +1,23 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#
+# Rıdvan Örsvuran (C) 2009
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 import pygtk
 pygtk.require('2.0')
 import gtk, gobject
@@ -23,25 +43,37 @@ class ConnectionWidget(gtk.Table):
         """creates UI
         """
         self.check_btn = gtk.CheckButton()
-        if self._state[0:2] == "up":
-            self.check_btn.set_active(True)
         self._label = gtk.Label(self._connection_name)
         self._info = gtk.Label(self._state)
         self._label.set_alignment(0.0, 0.5)
         self._info.set_alignment(0.0, 0.5)
         self.edit_btn = gtk.Button("Edit")
-        self.edit_btn.show()
         self.attach(self.check_btn, 0, 1, 0, 2, gtk.SHRINK, gtk.SHRINK)
         self.attach(self._label, 1 , 2, 0, 1, gtk.EXPAND|gtk.FILL, gtk.SHRINK)
         self.attach(self._info, 1 , 2, 1, 2, gtk.EXPAND|gtk.FILL,  gtk.SHRINK)
         self.attach(self.edit_btn, 2, 3, 0, 2, gtk.SHRINK, gtk.SHRINK)
+        self.setMode(self._state.split(' '))
+    def setMode(self, args):
+        """sets _info label text
+        and is _on or not
+        Arguments:
+        - `args`:
+        """
+        if args[0] != "up":
+            self.check_btn.set_active(False)
+            self._info.set_text(args[0])
+        else:
+            self.check_btn.set_active(True)
+            self._info.set_markup('<span color="green">'+
+                                  args[1]+
+                                  '</span>')
     def connectSignals(self, click_signal, edit_signal):
         """connect widgets signals
         Arguments:
         - `click_signal`:
         - `edit_signal`:
         """
-        self.check_btn.connect("clicked", click_signal,
+        self.check_btn.connect("pressed", click_signal,
                               {"package":self._package_name,
                                "connection":self._connection_name})
         self.edit_btn.connect("clicked", edit_signal,
@@ -54,22 +86,30 @@ class Base(object):
     def __init__(self):
         self._dbusMainLoop()
         self.iface = NetworkIface()
+        #ui
         builder = gtk.Builder()
         builder.add_from_file("ui/main.glade")
         builder.connect_signals({"on_window_main_destroy" : gtk.main_quit })
         self.window = builder.get_object("window_main")
+        # show connection as Widgets
+        self.widgets = {}
         self.showConnections()
+        # listen for changes
+        self.iface.listen(self._listener)
+
     def _onConnectionClicked(self, widget, callback_data):
         self.iface.toggle(callback_data['package'],
                           callback_data['connection'])
     def _onConnectionEdit(self, widget, callback_data):
         print "TODO"
+
     def showConnections(self):
         """show connection on gui
         """
         self.vbox = gtk.VBox()
         self.window.add(self.vbox)
         for package in self.iface.packages():
+            self.widgets[package] = {}
             for connection in self.iface.connections(package):
                 state = self.iface.info(package, connection)[u"state"]
                 con_wg = ConnectionWidget(package,
@@ -78,6 +118,18 @@ class Base(object):
                 con_wg.connectSignals(self._onConnectionClicked,
                                       self._onConnectionEdit)
                 self.vbox.add(con_wg)
+                self.widgets[package][connection] = con_wg
+
+    def _listener(self, package, signal, args):
+        args = map(lambda x: unicode(x), list(args))
+        """comar listener
+        Arguments:
+        - `package`:
+        - `signal`:
+        - `args`:
+        """
+        if signal == "stateChanged":
+            self.widgets[package][args[0]].setMode(args[1:])
 
     def _dbusMainLoop(self):
         from dbus.mainloop.glib import DBusGMainLoop
