@@ -18,11 +18,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import gettext
+import locale
+import os
+
 import pygtk
 pygtk.require('2.0')
 import gtk, gobject
 
 from backend import NetworkIface
+
+
+APP_NAME="network_manager_gtk"
+LOCALE_DIR= "locale"
+trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=False)
+_ = trans.ugettext
+
+
 
 class ConnectionWidget(gtk.Table):
     """A special widget contains connection related stuff
@@ -47,21 +59,34 @@ class ConnectionWidget(gtk.Table):
         self._info = gtk.Label(self._state)
         self._label.set_alignment(0.0, 0.5)
         self._info.set_alignment(0.0, 0.5)
-        self.edit_btn = gtk.Button("Edit")
-        self.attach(self.check_btn, 0, 1, 0, 2, gtk.SHRINK, gtk.SHRINK)
-        self.attach(self._label, 1 , 2, 0, 1, gtk.EXPAND|gtk.FILL, gtk.SHRINK)
-        self.attach(self._info, 1 , 2, 1, 2, gtk.EXPAND|gtk.FILL,  gtk.SHRINK)
-        self.attach(self.edit_btn, 2, 3, 0, 2, gtk.SHRINK, gtk.SHRINK)
+        self.edit_btn = gtk.Button(_('Edit'))
+        self.attach(self.check_btn, 0, 1, 0, 2,
+                    gtk.SHRINK, gtk.SHRINK)
+        self.attach(self._label, 1 , 2, 0, 1,
+                    gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        self.attach(self._info, 1 , 2, 1, 2,
+                    gtk.EXPAND|gtk.FILL,  gtk.SHRINK)
+        self.attach(self.edit_btn, 2, 3, 0, 2,
+                    gtk.SHRINK, gtk.SHRINK)
         self.setMode(self._state.split(' '))
     def setMode(self, args):
         """sets _info label text
         and is _on or not
         Arguments:
-        - `args`:
+        - `args`: state, detail
         """
+        detail = ""
+        if len(args) > 1:
+            detail = args[1]
+        states = {"down"        : _("Disconnected"),
+                  "up"          : _("Connected"),
+                  "connecting"  : _("Connecting"),
+                  "inaccessible": detail,
+                  "unplugged"   : _("Cable or device is unplugged.")}
+
         if args[0] != "up":
             self.check_btn.set_active(False)
-            self._info.set_text(args[0])
+            self._info.set_text(states[args[0]])
         else:
             self.check_btn.set_active(True)
             self._info.set_markup('<span color="green">'+
@@ -94,6 +119,8 @@ class Base(object):
         # show connection as Widgets
         self.widgets = {}
         self.showConnections()
+        self.holder = builder.get_object("holder")
+        self.holder.add_with_viewport(self.vbox)
         # listen for changes
         self.iface.listen(self._listener)
 
@@ -106,8 +133,7 @@ class Base(object):
     def showConnections(self):
         """show connection on gui
         """
-        self.vbox = gtk.VBox()
-        self.window.add(self.vbox)
+        self.vbox = gtk.VBox(homogeneous=False, spacing=10)
         for package in self.iface.packages():
             self.widgets[package] = {}
             for connection in self.iface.connections(package):
@@ -117,19 +143,23 @@ class Base(object):
                                           state)
                 con_wg.connectSignals(self._onConnectionClicked,
                                       self._onConnectionEdit)
-                self.vbox.add(con_wg)
+                self.vbox.pack_start(con_wg, expand=False, fill=False)
                 self.widgets[package][connection] = con_wg
 
     def _listener(self, package, signal, args):
-        args = map(lambda x: unicode(x), list(args))
         """comar listener
         Arguments:
-        - `package`:
-        - `signal`:
-        - `args`:
+        - `package`: package of item
+        - `signal`: comar signal type
+        - `args`: arguments
         """
+        args = map(lambda x: unicode(x), list(args))
         if signal == "stateChanged":
             self.widgets[package][args[0]].setMode(args[1:])
+        elif signal == "deviceChanged":
+            print "TODO:Listen comar signal deviceChanged "
+        elif signal == "connectionChanged":
+            print "TODO:Listen comar signal connectionChanged"
 
     def _dbusMainLoop(self):
         from dbus.mainloop.glib import DBusGMainLoop
