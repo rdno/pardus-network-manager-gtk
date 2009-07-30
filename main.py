@@ -31,9 +31,11 @@ from backend import NetworkIface
 
 APP_NAME="network_manager_gtk"
 LOCALE_DIR= "locale"
-trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=False)
+trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=True)
 _ = trans.ugettext
-
+from gtk import glade
+glade.bindtextdomain(APP_NAME, LOCALE_DIR)
+glade.textdomain(APP_NAME)
 
 
 class ConnectionWidget(gtk.Table):
@@ -112,14 +114,13 @@ class Base(object):
         self._dbusMainLoop()
         self.iface = NetworkIface()
         #ui
-        builder = gtk.Builder()
-        builder.add_from_file("ui/main.glade")
-        builder.connect_signals({"on_window_main_destroy" : gtk.main_quit })
-        self.window = builder.get_object("window_main")
+        ui = glade.XML("ui/main.glade")
+        ui.signal_connect("on_window_main_destroy", gtk.main_quit)
+        self.window = ui.get_widget("window_main")
         # show connection as Widgets
         self.widgets = {}
         self.showConnections()
-        self.holder = builder.get_object("holder")
+        self.holder = ui.get_widget("holder")
         self.holder.add_with_viewport(self.vbox)
         # listen for changes
         self.iface.listen(self._listener)
