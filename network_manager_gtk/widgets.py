@@ -18,11 +18,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from translation import _
+from translation import _, bind_glade_domain
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gobject
+import gtk
+import gobject
+from gtk import glade
 
 class ConnectionWidget(gtk.Table):
     """A special widget contains connection related stuff
@@ -34,7 +36,7 @@ class ConnectionWidget(gtk.Table):
         - `connection_name`: user's connection name
         - `state`: connection state
         """
-        gtk.Table.__init__(self, rows=2, columns=3)
+        gtk.Table.__init__(self, rows=2, columns=4)
         self._package_name = package_name
         self._connection_name = connection_name
         self._state = state
@@ -48,6 +50,7 @@ class ConnectionWidget(gtk.Table):
         self._label.set_alignment(0.0, 0.5)
         self._info.set_alignment(0.0, 0.5)
         self.edit_btn = gtk.Button(_('Edit'))
+        self.delete_btn = gtk.Button(_('Delete'))
         self.attach(self.check_btn, 0, 1, 0, 2,
                     gtk.SHRINK, gtk.SHRINK)
         self.attach(self._label, 1 , 2, 0, 1,
@@ -55,6 +58,8 @@ class ConnectionWidget(gtk.Table):
         self.attach(self._info, 1 , 2, 1, 2,
                     gtk.EXPAND|gtk.FILL,  gtk.SHRINK)
         self.attach(self.edit_btn, 2, 3, 0, 2,
+                    gtk.SHRINK, gtk.SHRINK)
+        self.attach(self.delete_btn, 3, 4, 0, 2,
                     gtk.SHRINK, gtk.SHRINK)
         self.setMode(self._state.split(' '))
     def setMode(self, args):
@@ -94,3 +99,25 @@ class ConnectionWidget(gtk.Table):
                                "connection":self._connection_name})
 
 gobject.type_register(ConnectionWidget)
+
+class MainInterface(object):
+    """Imports main window glade
+    """
+
+    def __init__(self):
+        """import glade
+        """
+        bind_glade_domain()
+        self._xml = glade.XML("ui/main.glade")
+        self._xml.signal_connect("on_window_main_destroy",
+                                gtk.main_quit)
+        self._window = self._xml.get_widget("window_main")
+        self._holder = self._xml.get_widget("holder")
+    def getWindow(self):
+        """returns window
+        """
+        return self._window
+    def getHolder(self):
+        """returns holder
+        """
+        return self._holder

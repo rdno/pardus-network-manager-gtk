@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-28 11:14+0300\n"
+"POT-Creation-Date: 2009-07-31 10:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,23 +16,27 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: main.py:62
+#: network_manager_gtk/widgets.py:52
 msgid "Edit"
 msgstr ""
 
-#: main.py:81
+#: network_manager_gtk/widgets.py:53
+msgid "Delete"
+msgstr ""
+
+#: network_manager_gtk/widgets.py:74
 msgid "Disconnected"
 msgstr ""
 
-#: main.py:82
+#: network_manager_gtk/widgets.py:75
 msgid "Connected"
 msgstr ""
 
-#: main.py:83
+#: network_manager_gtk/widgets.py:76
 msgid "Connecting"
 msgstr ""
 
-#: main.py:85
+#: network_manager_gtk/widgets.py:78
 msgid "Cable or device is unplugged."
 msgstr ""
 

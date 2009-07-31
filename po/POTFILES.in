@@ -1,0 +1,9 @@
+# List of source files containing translatable strings.
+
+#Python Files
+network-manager-gtk.py
+network_manager_gtk/widgets.py
+network_manager_gtk/translation.py
+
+#Glade .h files
+ui/main.glade.h
