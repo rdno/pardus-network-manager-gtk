@@ -7,3 +7,5 @@ network_manager_gtk/translation.py
 
 #Glade .h files
 ui/main.glade.h
+ui/edit.glade.h
+

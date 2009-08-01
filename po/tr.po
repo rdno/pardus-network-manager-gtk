@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Network Manager GTK\n"
+"Project-Id-Version: Network Manager gtk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-31 10:54+0300\n"
+"POT-Creation-Date: 2009-08-01 12:39+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Rıdvan Örsvuran <flasherdn@gmail.com>\n"
 "Language-Team:  <flasherdn@gmail.com>\n"
@@ -32,9 +32,94 @@ msgstr "Bağlanıyor"
 
 #: network_manager_gtk/widgets.py:78
 msgid "Cable or device is unplugged."
-msgstr "Kablo ya da aygıt takılı değil."
+msgstr "Kablo ya da aygıt bağlı değil."
 
 #: ui/main.glade.h:2
 msgid "Network Manager"
 msgstr "Ağ Yöneticisi"
+
+#: ui/edit.glade.h:2
+#, no-c-format
+msgid "<b>Device Name:</b>%s"
+msgstr "<b>Aygıt Adı:</b>%s"
+
+#: ui/edit.glade.h:3
+msgid "<b>Name Servers</b>"
+msgstr "<b>İsim Sunucuları</b>"
+
+#: ui/edit.glade.h:4
+msgid "<b>Network Settings</b>"
+msgstr "<b>Ağ Ayarları</b>"
+
+#: ui/edit.glade.h:5
+msgid "<b>Profile</b>"
+msgstr "<b>Profil</b>"
+
+#: ui/edit.glade.h:6
+msgid "<b>Wireless</b>"
+msgstr "<b>Kablosuz</b>"
+
+#: ui/edit.glade.h:7
+msgid "Address:"
+msgstr "Adres:"
+
+#: ui/edit.glade.h:8
+msgid "Apply"
+msgstr "Uygula"
+
+#: ui/edit.glade.h:9
+msgid "Automatic"
+msgstr "Otomatik"
+
+#: ui/edit.glade.h:10
+msgid "Cancel"
+msgstr "İptal"
+
+#: ui/edit.glade.h:11
+msgid "Custom"
+msgstr "özel"
+
+#: ui/edit.glade.h:12
+msgid "Default"
+msgstr "öntanımlı"
+
+#: ui/edit.glade.h:13
+msgid "Default Gateway:"
+msgstr "Öntanımlı Ağ Geçidi:"
+
+#: ui/edit.glade.h:15
+msgid "Edit Connection"
+msgstr "Bağlanıyı Düzenle"
+
+#: ui/edit.glade.h:16
+msgid "Hide Password"
+msgstr "parolayı Gizle"
+
+#: ui/edit.glade.h:17
+msgid "Network Mask:"
+msgstr "Ağ Maskesi:"
+
+#: ui/edit.glade.h:18
+msgid "Password:"
+msgstr "Parola:"
+
+#: ui/edit.glade.h:19
+msgid "Profile Name:"
+msgstr "Profil İsmi:"
+
+#: ui/edit.glade.h:20
+msgid "Scan"
+msgstr "Tara"
+
+#: ui/edit.glade.h:21
+msgid "Security Type:"
+msgstr "Güvenlik Türü:"
+
+#: ui/edit.glade.h:22
+msgid "Use DHCP"
+msgstr "DHCP kullan"
+
+#: ui/edit.glade.h:23
+msgid "Use Manual Settings"
+msgstr "Özel Ayarları Kullan"
 

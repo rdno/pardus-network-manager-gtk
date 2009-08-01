@@ -21,7 +21,7 @@ import gettext
 
 APP_NAME="network_manager_gtk"
 LOCALE_DIR= "locale"
-trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=True)
+trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=False)
 _ = trans.ugettext
 def bind_glade_domain():
     from gtk import glade

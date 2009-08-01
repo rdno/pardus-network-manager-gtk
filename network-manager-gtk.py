@@ -25,10 +25,11 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from backend import NetworkIface
+from network_manager_gtk.backend import NetworkIface
 
 from network_manager_gtk.widgets import ConnectionWidget
 from network_manager_gtk.widgets import MainInterface
+from network_manager_gtk.widgets import EditInterface
 
 
 class Base(object):
@@ -50,8 +51,11 @@ class Base(object):
         self.iface.toggle(callback_data['package'],
                           callback_data['connection'])
     def _onConnectionEdit(self, widget, callback_data):
-        print "TODO"
-
+        a = EditInterface(callback_data['package'],
+                          callback_data['connection'])
+        a.getWindow().show()
+    def _onConnectionDelete(self, widget, callback_data):
+        print "TODO:onConnection Delete"
     def showConnections(self):
         """show connection on gui
         """
@@ -64,7 +68,8 @@ class Base(object):
                                           connection,
                                           state)
                 con_wg.connectSignals(self._onConnectionClicked,
-                                      self._onConnectionEdit)
+                                      self._onConnectionEdit,
+                                      self._onConnectionDelete)
                 self.vbox.pack_start(con_wg, expand=False, fill=False)
                 self.widgets[package][connection] = con_wg
 
