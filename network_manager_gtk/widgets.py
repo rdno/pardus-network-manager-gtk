@@ -23,6 +23,7 @@ from backend import NetworkIface
 
 import pygtk
 pygtk.require('2.0')
+import pango
 import gtk
 import gobject
 from gtk import glade
@@ -105,6 +106,70 @@ class ConnectionWidget(gtk.Table):
 
 gobject.type_register(ConnectionWidget)
 
+class WifiItem(gtk.HBox):
+    """A wifi item
+    """
+
+    def __init__(self, data):
+        """init
+
+        Arguments:
+        - `data`:
+        """
+        gtk.HBox.__init__(self)
+        self._data = data
+        self.quality = float(self._data["quality"])
+        self.maks = float(self._data["quality_max"])
+        self.show_ui()
+    def getQuality(self):
+        return self.quality/self.maks
+    def show_ui(self):
+        self.label = gtk.Label(self._data["remote"])
+        self.label.set_alignment(0, 0.5)
+        self.pb = gtk.ProgressBar()
+        self.pb.set_fraction(self.getQuality())
+        self.pack_start(self.label)
+        self.pack_end(self.pb,
+                      expand=False, padding=5)
+        self.show_all()
+
+gobject.type_register(WifiItem)
+
+
+class WifiItemHolder(gtk.ScrolledWindow):
+    """holder for wifi connections
+    """
+
+    def __init__(self):
+        """init
+        """
+        gtk.ScrolledWindow.__init__(self)
+        self.set_shadow_type(gtk.SHADOW_IN)
+        self.set_policy(gtk.POLICY_NEVER,
+                        gtk.POLICY_AUTOMATIC)
+        self.vbox = gtk.VBox()
+    def getConnections(self, data):
+        self.set_scanning(False)
+        self.items = []
+        for remote in data:
+            a = WifiItem(remote)
+            self.vbox.pack_start(a, expand=False)
+            self.items.append(a)
+        self.add_with_viewport(self.vbox)
+        self.show_all()
+    def set_scanning(self, is_scanning):
+        if is_scanning:
+            if self.get_child():
+                self.remove(self.get_child())
+            self.scan_lb = gtk.Label(_("Scanning..."))
+            self.add_with_viewport(self.scan_lb)
+            self.show_all()
+        else:
+            self.remove(self.get_child())
+gobject.type_register(WifiItemHolder)
+
+
+
 class MainInterface(object):
     """Imports main window glade
     """
@@ -127,6 +192,7 @@ class MainInterface(object):
         """
         return self._holder
 
+
 class EditInterface(object):
     """Imports edit window glade
     """
@@ -145,7 +211,6 @@ class EditInterface(object):
         self.get  = self._xml.get_widget
         self.listenSignals()
         self.insertData()
-
         # is wireless ?
         if self._package != "wireless_tools":
             self.get("wireless_frame").hide()
@@ -177,6 +242,15 @@ class EditInterface(object):
     def on_hidepass(self, widget):
         visibility = not widget.get_active()
         self.get("pass_text").set_visibility(visibility)
+    def wifilist(self, package, exception, args):
+        if not exception:
+            self.wifiitems.getConnections(args[0])
+        else:
+            print exception
+
+    def on_scan(self, widget):
+        self.wifiitems.set_scanning(True)
+        self.iface.scanRemote(self.device , self._package, self.wifilist)
     def listenSignals(self):
         self._xml.signal_connect("on_dhcp_rb_clicked",
                                  self.on_net_changed)
@@ -192,6 +266,8 @@ class EditInterface(object):
                                  self.on_changepass)
         self._xml.signal_connect("on_hidepass_cb_toggled",
                                  self.on_hidepass)
+        self._xml.signal_connect("on_scan_btn_clicked",
+                                 self.on_scan)
 
     def setSecurityTypesStyle(self):
         ##Security Type ComboBox
@@ -218,6 +294,7 @@ class EditInterface(object):
         data = self.iface.info(self._package,
                                self._connection)
         caps = self.iface.capabilities(self._package)
+        self.device = data["device_id"]
         #Profile Frame
         self.get("profilename").set_text(data[u"name"])
         self.if_available_set(data, "device_name",
@@ -254,30 +331,40 @@ class EditInterface(object):
         self.if_available_set(data, "name_server",
                               self.get("ns_custom_text").set_text)
         # Wireless Frame
-        self.if_available_set(data, "remote",
-                              self.get("essid_text").set_text)
-        modes = caps["modes"].split(",")
-        if "auth" in modes:
-            authType = self.iface.authType(self._package,
-                                           self._connection)
-            self.setSecurityTypesStyle()
-            noauth = _("No Authentication")
-            self._authMethods = [(0, "none", noauth)]
-            append_to_types = self.get("security_types").append_text
-            append_to_types(noauth)
-            self.get("security_types").set_active(0)
-            index = 1
-            with_password = False
-            for name, desc in self.iface.authMethods(self._package):
-                append_to_types(desc)
-                self._authMethods.append((index, name, desc))
-                if name == authType:
-                    self.get("security_types").set_active(index)
-                    with_password = True
-                index += 1
-            if with_password:
-               self.show_password("hidden")
+        if self._package == "wireless_tools":
+            self.if_available_set(data, "remote",
+                                  self.get("essid_text").set_text)
+            modes = caps["modes"].split(",")
+            if "auth" in modes:
+                authType = self.iface.authType(self._package,
+                                               self._connection)
+                self.setSecurityTypesStyle()
+                noauth = _("No Authentication")
+                self._authMethods = [(0, "none", noauth)]
+                append_to_types = self.get("security_types").append_text
 
+                append_to_types(noauth)
+                self.get("security_types").set_active(0)
+                index = 1
+                with_password = False
+
+                for name, desc in self.iface.authMethods(self._package):
+                    append_to_types(desc)
+                    self._authMethods.append((index, name, desc))
+                    if name == authType:
+                        self.get("security_types").set_active(index)
+                        with_password = True
+                    index += 1
+
+            if with_password:
+                self.show_password("hidden")
+            self.wifiitems = WifiItemHolder()
+            self.get("wireless_table").attach(self.wifiitems,
+                                              0, 1, 0, 4,
+                                              gtk.EXPAND|gtk.FILL,
+                                              gtk.EXPAND|gtk.FILL)
+            self.wifiitems.set_scanning(True)
+            self.iface.scanRemote(self.device , self._package, self.wifilist)
     def show_password(self, state):
         if (state == False) | (state == "hidden"):
             self.get("hidepass_cb").hide()
