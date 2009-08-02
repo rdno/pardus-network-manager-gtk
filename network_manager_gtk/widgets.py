@@ -142,23 +142,41 @@ class EditInterface(object):
         self._package = package
         self._connection = connection
         self._xml = glade.XML("ui/edit.glade")
-        self.getWidgets()
+        self.get  = self._xml.get_widget
         self.listenSignals()
         self.insertData()
 
         # is wireless ?
         if self._package != "wireless_tools":
-            self._wifi.hide()
+            self.get("wireless_frame").hide()
     def on_net_changed(self, widget):
-        if widget is self._dhcp_rb:
+        if widget is self.get("dhcp_rb"):
             self.setManualNetwork(False)
         else:
             self.setManualNetwork(True)
     def on_ns_changed(self, widget):
-        if widget is self._ns_custom:
+        if widget is self.get("ns_custom_rb"):
             self.setCustomNameServer(True)
         else:
             self.setCustomNameServer(False)
+    def on_changepass(self, widget):
+        self.show_password(True)
+        authType = self.iface.authType(self._package,
+                                       self._connection)
+        authInfo = self.iface.authInfo(self._package,
+                                       self._connection)
+        authParams = self.iface.authParameters(self._package,
+                                               authType)
+        if len(authParams) == 1:
+            password = authInfo.values()[0]
+            self.get("pass_text").set_text(password)
+            self.get("hidepass_cb").set_active(True)
+        elif len(authParams) > 1:
+            print "TODO:learn what is securityDialog"
+            print "--> at svn-24515 / base.py line:474\n"
+    def on_hidepass(self, widget):
+        visibility = not widget.get_active()
+        self.get("pass_text").set_visibility(visibility)
     def listenSignals(self):
         self._xml.signal_connect("on_dhcp_rb_clicked",
                                  self.on_net_changed)
@@ -170,79 +188,109 @@ class EditInterface(object):
                                  self.on_ns_changed)
         self._xml.signal_connect("on_ns_auto_rb_clicked",
                                  self.on_ns_changed)
-    def getWidgets(self):
-        get  = self._xml.get_widget
-        self._wifi = get("wireless_frame")
-        self._window = get("window_edit")
-        #Profile Frame
-        self._profiletxt = get("profilename")
-        self._devicename = get("device_name_label")
-        #Network Settings Frame
-        self._dhcp_rb = get("dhcp_rb")
-        self._manual_rb = get("manual_rb")
-        self._address = get("address")
-        self._address_lb = get("address_lb")
-        self._networkmask = get("networkmask")
-        self._networkmask_lb = get("networkmask_lb")
-        self._gateway = get("gateway")
-        self._gateway_lb = get("gateway_lb")
-        #Name Servers Frame
-        self._ns_custom = get("ns_custom_rb")
-        self._ns_default = get("ns_default_rb")
-        self._ns_auto = get("ns_auto_rb")
-        self._ns_custom_txt = get("ns_custom_text")
+        self._xml.signal_connect("on_changepass_btn_clicked",
+                                 self.on_changepass)
+        self._xml.signal_connect("on_hidepass_cb_toggled",
+                                 self.on_hidepass)
+
+    def setSecurityTypesStyle(self):
+        ##Security Type ComboBox
+        model = gtk.ListStore(str)
+        security_types = self.get("security_types")
+        security_types.set_model(model)
+        cell = gtk.CellRendererText()
+        security_types.pack_start(cell)
+        security_types.add_attribute(cell,'text',0)
 
     def setManualNetwork(self, state):
-        self._address.set_sensitive(state)
-        self._address_lb.set_sensitive(state)
-        self._networkmask.set_sensitive(state)
-        self._networkmask_lb.set_sensitive(state)
-        self._gateway.set_sensitive(state)
-        self._gateway_lb.set_sensitive(state)
+        self.get("address").set_sensitive(state)
+        self.get("address_lb").set_sensitive(state)
+        self.get("networkmask").set_sensitive(state)
+        self.get("networkmask_lb").set_sensitive(state)
+        self.get("gateway").set_sensitive(state)
+        self.get("gateway_lb").set_sensitive(state)
     def setCustomNameServer(self, state):
-        self._ns_custom_txt.set_sensitive(state)
+        self.get("ns_custom_text").set_sensitive(state)
 
     def insertData(self):
         """show preferences
         """
         data = self.iface.info(self._package,
                                self._connection)
+        caps = self.iface.capabilities(self._package)
         #Profile Frame
-        self._profiletxt.set_text(data[u"name"])
+        self.get("profilename").set_text(data[u"name"])
         self.if_available_set(data, "device_name",
-                              self._devicename.set_text)
+                              self.get("device_name_label").set_text)
         #TODO:more than one device support
 
         #Network Settings Frame
         if data.has_key("net_mode"):
             if data["net_mode"] == "auto":
-                self._dhcp_rb.set_active(True)
+                self.get("dhcp_rb").set_active(True)
                 self.setManualNetwork(False)
             else:
-                self._manual_rb.set_active(False)
+                self.get("manual_rb").set_active(False)
                 self.setManualNetwork(True)
 
         self.if_available_set(data, "net_address",
-                              self._address.set_text)
+                              self.get("address").set_text)
         self.if_available_set(data, "net_mask",
-                              self._networkmask.set_text)
+                              self.get("networkmask").set_text)
         self.if_available_set(data, "net_gateway",
-                              self._gateway.set_text)
+                              self.get("gateway").set_text)
 
         #Name Servers Frame
         if data.has_key("name_mode"):
             if data["name_mode"] == "default":
-                self._ns_default.set_active(True)
+                self.get("ns_default_rb").set_active(True)
                 self.setCustomNameServer(False)
             elif data["name_mode"] == "auto":
-                self._ns_auto.set_active(True)
+                self.get("ns_auto_rb").set_active(True)
                 self.setCustomNameServer(False)
             elif data["name_mode"] == "custom":
-                self._ns_custom.set_active(True)
+                self.get("ns_custom_rb").set_active(True)
                 self.setCustomNameServer(True)
         self.if_available_set(data, "name_server",
-                              self._ns_custom_txt.set_text)
-        print data
+                              self.get("ns_custom_text").set_text)
+        # Wireless Frame
+        self.if_available_set(data, "remote",
+                              self.get("essid_text").set_text)
+        modes = caps["modes"].split(",")
+        if "auth" in modes:
+            authType = self.iface.authType(self._package,
+                                           self._connection)
+            self.setSecurityTypesStyle()
+            noauth = _("No Authentication")
+            self._authMethods = [(0, "none", noauth)]
+            append_to_types = self.get("security_types").append_text
+            append_to_types(noauth)
+            self.get("security_types").set_active(0)
+            index = 1
+            with_password = False
+            for name, desc in self.iface.authMethods(self._package):
+                append_to_types(desc)
+                self._authMethods.append((index, name, desc))
+                if name == authType:
+                    self.get("security_types").set_active(index)
+                    with_password = True
+                index += 1
+            if with_password:
+               self.show_password("hidden")
+
+    def show_password(self, state):
+        if (state == False) | (state == "hidden"):
+            self.get("hidepass_cb").hide()
+            self.get("pass_text").hide()
+            self.get("pass_lb").hide()
+        elif state == True:
+            self.get("hidepass_cb").show()
+            self.get("pass_text").show()
+            self.get("pass_lb").show()
+        if state == "hidden":
+            self.get("changepass_btn").show()
+        else:
+            self.get("changepass_btn").hide()
 
     def if_available_set(self, data, key, method):
         if data.has_key(key):
@@ -251,5 +299,5 @@ class EditInterface(object):
     def getWindow(self):
         """returns window
         """
-        return self._window
+        return self.get("window_edit")
 
