@@ -106,36 +106,6 @@ class ConnectionWidget(gtk.Table):
 
 gobject.type_register(ConnectionWidget)
 
-class WifiItem(gtk.HBox):
-    """A wifi item
-    """
-
-    def __init__(self, data):
-        """init
-
-        Arguments:
-        - `data`:
-        """
-        gtk.HBox.__init__(self)
-        self._data = data
-        self.quality = float(self._data["quality"])
-        self.maks = float(self._data["quality_max"])
-        self.show_ui()
-    def getQuality(self):
-        return self.quality/self.maks
-    def show_ui(self):
-        self.label = gtk.Label(self._data["remote"])
-        self.label.set_alignment(0, 0.5)
-        self.pb = gtk.ProgressBar()
-        self.pb.set_fraction(self.getQuality())
-        self.pack_start(self.label)
-        self.pack_end(self.pb,
-                      expand=False, padding=5)
-        self.show_all()
-
-gobject.type_register(WifiItem)
-
-
 class WifiItemHolder(gtk.ScrolledWindow):
     """holder for wifi connections
     """
@@ -147,15 +117,24 @@ class WifiItemHolder(gtk.ScrolledWindow):
         self.set_shadow_type(gtk.SHADOW_IN)
         self.set_policy(gtk.POLICY_NEVER,
                         gtk.POLICY_AUTOMATIC)
-        self.vbox = gtk.VBox()
+        self.setup_view()
+    def setup_view(self):
+        self.store = gtk.ListStore(str, str)
+        column = lambda x, y:gtk.TreeViewColumn(x,
+                                                gtk.CellRendererText(),
+                                                text=y)
+        self.view = gtk.TreeView(self.store)
+        self.view.append_column(column(_("Name"), 0))
+        self.view.append_column(column(_("Quality"), 1))
+        self.view.connect("cursor-changed", self.on_change)
     def getConnections(self, data):
         self.set_scanning(False)
         self.items = []
+        self.data = []
         for remote in data:
-            a = WifiItem(remote)
-            self.vbox.pack_start(a, expand=False)
-            self.items.append(a)
-        self.add_with_viewport(self.vbox)
+            self.store.append([remote["remote"], _("%d%%") % int(remote["quality"])])
+            self.data.append(remote)
+        self.add_with_viewport(self.view)
         self.show_all()
     def set_scanning(self, is_scanning):
         if is_scanning:
@@ -166,6 +145,9 @@ class WifiItemHolder(gtk.ScrolledWindow):
             self.show_all()
         else:
             self.remove(self.get_child())
+    def on_change(self, widget):
+        print self.data[widget.get_cursor()[0][0]]
+
 gobject.type_register(WifiItemHolder)
 
 
