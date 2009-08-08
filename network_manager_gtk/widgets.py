@@ -117,7 +117,6 @@ class WifiItemHolder(gtk.ScrolledWindow):
         self.set_shadow_type(gtk.SHADOW_IN)
         self.set_policy(gtk.POLICY_NEVER,
                         gtk.POLICY_AUTOMATIC)
-        self.setup_view()
     def setup_view(self):
         self.store = gtk.ListStore(str, str)
         column = lambda x, y:gtk.TreeViewColumn(x,
@@ -126,11 +125,21 @@ class WifiItemHolder(gtk.ScrolledWindow):
         self.view = gtk.TreeView(self.store)
         self.view.append_column(column(_("Name"), 0))
         self.view.append_column(column(_("Quality"), 1))
-        self.view.connect("cursor-changed", self.on_change)
+    def get_active(self):
+        cursor = self.view.get_cursor()
+        if cursor[0]:
+            data = self.data[cursor[0][0]]
+        else:
+            data = None
+        return data
+    def listen_change(self, handler):
+        self.view.connect("cursor-changed", handler,
+                          {"get_connection":self.get_active})
     def getConnections(self, data):
         self.set_scanning(False)
         self.items = []
         self.data = []
+        self.setup_view()
         for remote in data:
             self.store.append([remote["remote"], _("%d%%") % int(remote["quality"])])
             self.data.append(remote)
@@ -145,8 +154,6 @@ class WifiItemHolder(gtk.ScrolledWindow):
             self.show_all()
         else:
             self.remove(self.get_child())
-    def on_change(self, widget):
-        print self.data[widget.get_cursor()[0][0]]
 
 gobject.type_register(WifiItemHolder)
 
@@ -179,8 +186,6 @@ class MainInterface(object):
 class EditSection(object):
     def __init__(self, parent):
         super(EditSection, self).__init__()
-        self.package = parent._package
-        self.connection = parent._connection
         self.get = parent.get
         self.signal_connect = parent._xml.signal_connect
         self.parent = parent
@@ -235,7 +240,140 @@ class NetworkSettingsSection(EditSection):
         self.if_available_set(data, "net_gateway",
                               self.get("gateway").set_text)
 
+class NameServerSection(EditSection):
+    def __init__(self, parent):
+        super(NameServerSection, self).__init__(parent)
+    def set_custom_name(self, state):
+        self.get("ns_custom_text").set_sensitive(state)
+    def _on_type_changed(self, widget):
+        if widget is self.get("ns_custom_rb"):
+            self.set_custom_name(True)
+        else:
+            self.set_custom_name(False)
+    def listen_signals(self):
+        self.signal_connect("on_ns_default_rb_clicked",
+                            self._on_type_changed)
+        self.signal_connect("on_ns_custom_rb_clicked",
+                            self._on_type_changed)
+        self.signal_connect("on_ns_auto_rb_clicked",
+                            self._on_type_changed)
+    def show_ui(self, data):
+        if data.has_key("name_mode"):
+            self.listen_signals()
+            if data["name_mode"] == "default":
+                self.get("ns_default_rb").set_active(True)
+                self.set_custom_name(False)
+            elif data["name_mode"] == "auto":
+                self.get("ns_auto_rb").set_active(True)
+                self.set_custom_name(False)
+            elif data["name_mode"] == "custom":
+                self.get("ns_custom_rb").set_active(True)
+                self.set_custom_name(True)
+        self.if_available_set(data, "name_server",
+                              self.get("ns_custom_text").set_text)
 
+class WirelessSection(EditSection):
+    def __init__(self, parent, password_state="hidden"):
+        super(WirelessSection, self).__init__(parent)
+        self.password_state = password_state
+        self.iface = parent.iface
+        self.package = parent._package
+        self.connection = parent._connection
+    # --- Password related
+    def show_password(self, state):
+        if (state == False) | (state == "hidden"):
+            self.get("hidepass_cb").hide()
+            self.get("pass_text").hide()
+            self.get("pass_lb").hide()
+        elif state == True:
+            self.get("hidepass_cb").show()
+            self.get("pass_text").show()
+            self.get("pass_lb").show()
+        if state == "hidden":
+            self.get("changepass_btn").show()
+        else:
+            self.get("changepass_btn").hide()
+    def change_password(self, widget=None):
+        self.show_password(True)
+        authType = self.iface.authType(self.package,
+                                       self.connection)
+        authInfo = self.iface.authInfo(self.package,
+                                       self.connection)
+        authParams = self.iface.authParameters(self.package,
+                                               authType)
+        if len(authParams) == 1:
+            password = authInfo.values()[0]
+            self.get("pass_text").set_text(password)
+            self.get("hidepass_cb").set_active(True)
+        elif len(authParams) > 1:
+            print "\nTODO:learn what is securityDialog"
+            print "--> at svn-24515 / base.py line:474\n"
+    def hide_password(self, widget):
+        visibility = not widget.get_active()
+        self.get("pass_text").set_visibility(visibility)
+    # end Password related
+    def scan(self, widget=None):
+        self.get("scan_btn").hide()
+        self.wifiitems.set_scanning(True)
+        self.iface.scanRemote(self.device , self.package, self.wifilist)
+    def listen_signals(self):
+        #Password related
+        self.signal_connect("on_changepass_btn_clicked",
+                            self.change_password)
+        self.signal_connect("on_hidepass_cb_toggled",
+                            self.hide_password)
+    def set_security_types_style(self):
+        ##Security Type ComboBox
+        model = gtk.ListStore(str)
+        security_types = self.get("security_types")
+        security_types.set_model(model)
+        cell = gtk.CellRendererText()
+        security_types.pack_start(cell)
+        security_types.add_attribute(cell,'text',0)
+    def prepare_security_types(self, authType):
+        self.set_security_types_style()
+        noauth = _("No Authentication")
+        self._authMethods = [(0, "none", noauth)]
+        append_to_types = self.get("security_types").append_text
+        append_to_types(noauth)
+        self.get("security_types").set_active(0)
+        index = 1
+        self.with_password = False
+        for name, desc in self.iface.authMethods(self.package):
+            append_to_types(desc)
+            self._authMethods.append((index, name, desc))
+            if name == authType:
+                self.get("security_types").set_active(index)
+                self.with_password = True
+            index += 1
+    def on_wifi_clicked(self, widget, callback_data):
+        print "clicked:", callback_data["get_connection"]()
+    def wifilist(self, package, exception, args):
+        self.get("scan_btn").show()
+        self.signal_connect("on_scan_btn_clicked",
+                            self.scan)
+        if not exception:
+            self.wifiitems.getConnections(args[0])
+            self.wifiitems.listen_change(self.on_wifi_clicked)
+        else:
+            print exception
+    def show_ui(self, data, caps):
+        self.device = data["device_id"]
+        self.if_available_set(data, "remote",
+                              self.get("essid_text").set_text)
+        modes = caps["modes"].split(",")
+        if "auth" in modes:
+            authType = self.iface.authType(self.parent._package,
+                                           self.parent._connection)
+            self.prepare_security_types(authType)
+            if self.with_password:
+                self.show_password(self.password_state)
+            self.wifiitems = WifiItemHolder()
+            self.get("wireless_table").attach(self.wifiitems,
+                                              0, 1, 0, 4,
+                                              gtk.EXPAND|gtk.FILL,
+                                              gtk.EXPAND|gtk.FILL)
+        self.scan()
 
 # end Edit Window Sections
 
@@ -255,77 +393,12 @@ class EditInterface(object):
         self._connection = connection
         self._xml = glade.XML("ui/edit.glade")
         self.get  = self._xml.get_widget
-        self.listenSignals()
         self.insertData()
-        # is wireless ?
-        if self._package != "wireless_tools":
-            self.get("wireless_frame").hide()
-        self.abo = ProfileSection(self)
-    def on_ns_changed(self, widget):
-        if widget is self.get("ns_custom_rb"):
-            self.setCustomNameServer(True)
-        else:
-            self.setCustomNameServer(False)
-    def on_changepass(self, widget):
-        self.show_password(True)
-        authType = self.iface.authType(self._package,
-                                       self._connection)
-        authInfo = self.iface.authInfo(self._package,
-                                       self._connection)
-        authParams = self.iface.authParameters(self._package,
-                                               authType)
-        if len(authParams) == 1:
-            password = authInfo.values()[0]
-            self.get("pass_text").set_text(password)
-            self.get("hidepass_cb").set_active(True)
-        elif len(authParams) > 1:
-            print "TODO:learn what is securityDialog"
-            print "--> at svn-24515 / base.py line:474\n"
-    def on_hidepass(self, widget):
-        visibility = not widget.get_active()
-        self.get("pass_text").set_visibility(visibility)
-    def wifilist(self, package, exception, args):
-        if not exception:
-            self.wifiitems.getConnections(args[0])
-        else:
-            print exception
-
-    def on_scan(self, widget):
-        self.wifiitems.set_scanning(True)
-        self.iface.scanRemote(self.device , self._package, self.wifilist)
-    def listenSignals(self):
-        self._xml.signal_connect("on_ns_default_rb_clicked",
-                                 self.on_ns_changed)
-        self._xml.signal_connect("on_ns_custom_rb_clicked",
-                                 self.on_ns_changed)
-        self._xml.signal_connect("on_ns_auto_rb_clicked",
-                                 self.on_ns_changed)
-        self._xml.signal_connect("on_changepass_btn_clicked",
-                                 self.on_changepass)
-        self._xml.signal_connect("on_hidepass_cb_toggled",
-                                 self.on_hidepass)
-        self._xml.signal_connect("on_scan_btn_clicked",
-                                 self.on_scan)
-
-    def setSecurityTypesStyle(self):
-        ##Security Type ComboBox
-        model = gtk.ListStore(str)
-        security_types = self.get("security_types")
-        security_types.set_model(model)
-        cell = gtk.CellRendererText()
-        security_types.pack_start(cell)
-        security_types.add_attribute(cell,'text',0)
-
-    def setCustomNameServer(self, state):
-        self.get("ns_custom_text").set_sensitive(state)
-
     def insertData(self):
         """show preferences
         """
         data = self.iface.info(self._package,
                                self._connection)
-        caps = self.iface.capabilities(self._package)
-        self.device = data["device_id"]
         #Profile Frame
         profile_frame = ProfileSection(self)
         profile_frame.show_ui(data)
@@ -333,70 +406,15 @@ class EditInterface(object):
         network_frame = NetworkSettingsSection(self)
         network_frame.show_ui(data)
         #Name Servers Frame
-        if data.has_key("name_mode"):
-            if data["name_mode"] == "default":
-                self.get("ns_default_rb").set_active(True)
-                self.setCustomNameServer(False)
-            elif data["name_mode"] == "auto":
-                self.get("ns_auto_rb").set_active(True)
-                self.setCustomNameServer(False)
-            elif data["name_mode"] == "custom":
-                self.get("ns_custom_rb").set_active(True)
-                self.setCustomNameServer(True)
-        self.if_available_set(data, "name_server",
-                              self.get("ns_custom_text").set_text)
+        name_frame = NameServerSection(self)
+        name_frame.show_ui(data)
         # Wireless Frame
         if self._package == "wireless_tools":
-            self.if_available_set(data, "remote",
-                                  self.get("essid_text").set_text)
-            modes = caps["modes"].split(",")
-            if "auth" in modes:
-                authType = self.iface.authType(self._package,
-                                               self._connection)
-                self.setSecurityTypesStyle()
-                noauth = _("No Authentication")
-                self._authMethods = [(0, "none", noauth)]
-                append_to_types = self.get("security_types").append_text
-
-                append_to_types(noauth)
-                self.get("security_types").set_active(0)
-                index = 1
-                with_password = False
-
-                for name, desc in self.iface.authMethods(self._package):
-                    append_to_types(desc)
-                    self._authMethods.append((index, name, desc))
-                    if name == authType:
-                        self.get("security_types").set_active(index)
-                        with_password = True
-                    index += 1
-
-            if with_password:
-                self.show_password("hidden")
-            self.wifiitems = WifiItemHolder()
-            self.get("wireless_table").attach(self.wifiitems,
-                                              0, 1, 0, 4,
-                                              gtk.EXPAND|gtk.FILL,
-                                              gtk.EXPAND|gtk.FILL)
-            self.wifiitems.set_scanning(True)
-            self.iface.scanRemote(self.device , self._package, self.wifilist)
-    def show_password(self, state):
-        if (state == False) | (state == "hidden"):
-            self.get("hidepass_cb").hide()
-            self.get("pass_text").hide()
-            self.get("pass_lb").hide()
-        elif state == True:
-            self.get("hidepass_cb").show()
-            self.get("pass_text").show()
-            self.get("pass_lb").show()
-        if state == "hidden":
-            self.get("changepass_btn").show()
+            caps = self.iface.capabilities(self._package)
+            wireless_frame = WirelessSection(self)
+            wireless_frame.show_ui(data, caps)
         else:
-            self.get("changepass_btn").hide()
-
-    def if_available_set(self, data, key, method):
-        if data.has_key(key):
-            method(data[key])
+            self.get("wireless_frame").hide()
 
     def getWindow(self):
         """returns window
