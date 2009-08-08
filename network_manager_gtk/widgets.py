@@ -174,6 +174,33 @@ class MainInterface(object):
         """
         return self._holder
 
+# --- Edit Window Sections (in ui: frame)
+
+class EditSection(object):
+    def __init__(self, parent):
+        super(EditSection, self).__init__()
+        self.package = parent._package
+        self.connection = parent._connection
+        self.get = parent.get
+        self.parent = parent
+    def if_available_set(self, data, key, method):
+        """if DATA dictionary has KEY execute METHOD with
+        arg:data[key]"""
+        if data.has_key(key):
+            method(data[key])
+
+class ProfileSection(EditSection):
+    def __init__(self, parent):
+        super(ProfileSection, self).__init__(parent)
+    def show_ui(self, data):
+        self.get("profilename").set_text(data[u"name"])
+        self.if_available_set(data, "device_name",
+                              self.get("device_name_label").set_text)
+        #TODO:more than one device support
+
+
+
+# end Edit Window Sections
 
 class EditInterface(object):
     """Imports edit window glade
@@ -196,6 +223,7 @@ class EditInterface(object):
         # is wireless ?
         if self._package != "wireless_tools":
             self.get("wireless_frame").hide()
+        self.abo = ProfileSection(self)
     def on_net_changed(self, widget):
         if widget is self.get("dhcp_rb"):
             self.setManualNetwork(False)
@@ -278,11 +306,8 @@ class EditInterface(object):
         caps = self.iface.capabilities(self._package)
         self.device = data["device_id"]
         #Profile Frame
-        self.get("profilename").set_text(data[u"name"])
-        self.if_available_set(data, "device_name",
-                              self.get("device_name_label").set_text)
-        #TODO:more than one device support
-
+        profile_frame = ProfileSection(self)
+        profile_frame.show_ui(data)
         #Network Settings Frame
         if data.has_key("net_mode"):
             if data["net_mode"] == "auto":
@@ -369,4 +394,3 @@ class EditInterface(object):
         """returns window
         """
         return self.get("window_edit")
-
