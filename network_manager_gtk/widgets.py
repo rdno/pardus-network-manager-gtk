@@ -182,6 +182,7 @@ class EditSection(object):
         self.package = parent._package
         self.connection = parent._connection
         self.get = parent.get
+        self.signal_connect = parent._xml.signal_connect
         self.parent = parent
     def if_available_set(self, data, key, method):
         """if DATA dictionary has KEY execute METHOD with
@@ -197,6 +198,42 @@ class ProfileSection(EditSection):
         self.if_available_set(data, "device_name",
                               self.get("device_name_label").set_text)
         #TODO:more than one device support
+class NetworkSettingsSection(EditSection):
+    def __init__(self, parent):
+        super(NetworkSettingsSection, self).__init__(parent)
+    def _on_type_changed(self, widget):
+        if widget is self.get("dhcp_rb"):
+            self.set_manual_network(False)
+        else:
+            self.set_manual_network(True)
+    def set_manual_network(self, state):
+        self.get("address").set_sensitive(state)
+        self.get("address_lb").set_sensitive(state)
+        self.get("networkmask").set_sensitive(state)
+        self.get("networkmask_lb").set_sensitive(state)
+        self.get("gateway").set_sensitive(state)
+        self.get("gateway_lb").set_sensitive(state)
+    def listen_signals(self):
+        self.signal_connect("on_dhcp_rb_clicked",
+                            self._on_type_changed)
+        self.signal_connect("on_manual_rb_clicked",
+                             self._on_type_changed)
+    def show_ui(self, data):
+        if data.has_key("net_mode"):
+            self.listen_signals()
+            if data["net_mode"] == "auto":
+                self.get("dhcp_rb").set_active(True)
+                self.set_manual_network(False)
+            else:
+                self.get("manual_rb").set_active(False)
+                self.set_manual_network(True)
+
+        self.if_available_set(data, "net_address",
+                              self.get("address").set_text)
+        self.if_available_set(data, "net_mask",
+                              self.get("networkmask").set_text)
+        self.if_available_set(data, "net_gateway",
+                              self.get("gateway").set_text)
 
 
 
@@ -224,11 +261,6 @@ class EditInterface(object):
         if self._package != "wireless_tools":
             self.get("wireless_frame").hide()
         self.abo = ProfileSection(self)
-    def on_net_changed(self, widget):
-        if widget is self.get("dhcp_rb"):
-            self.setManualNetwork(False)
-        else:
-            self.setManualNetwork(True)
     def on_ns_changed(self, widget):
         if widget is self.get("ns_custom_rb"):
             self.setCustomNameServer(True)
@@ -262,10 +294,6 @@ class EditInterface(object):
         self.wifiitems.set_scanning(True)
         self.iface.scanRemote(self.device , self._package, self.wifilist)
     def listenSignals(self):
-        self._xml.signal_connect("on_dhcp_rb_clicked",
-                                 self.on_net_changed)
-        self._xml.signal_connect("on_manual_rb_clicked",
-                                 self.on_net_changed)
         self._xml.signal_connect("on_ns_default_rb_clicked",
                                  self.on_ns_changed)
         self._xml.signal_connect("on_ns_custom_rb_clicked",
@@ -288,13 +316,6 @@ class EditInterface(object):
         security_types.pack_start(cell)
         security_types.add_attribute(cell,'text',0)
 
-    def setManualNetwork(self, state):
-        self.get("address").set_sensitive(state)
-        self.get("address_lb").set_sensitive(state)
-        self.get("networkmask").set_sensitive(state)
-        self.get("networkmask_lb").set_sensitive(state)
-        self.get("gateway").set_sensitive(state)
-        self.get("gateway_lb").set_sensitive(state)
     def setCustomNameServer(self, state):
         self.get("ns_custom_text").set_sensitive(state)
 
@@ -309,21 +330,8 @@ class EditInterface(object):
         profile_frame = ProfileSection(self)
         profile_frame.show_ui(data)
         #Network Settings Frame
-        if data.has_key("net_mode"):
-            if data["net_mode"] == "auto":
-                self.get("dhcp_rb").set_active(True)
-                self.setManualNetwork(False)
-            else:
-                self.get("manual_rb").set_active(False)
-                self.setManualNetwork(True)
-
-        self.if_available_set(data, "net_address",
-                              self.get("address").set_text)
-        self.if_available_set(data, "net_mask",
-                              self.get("networkmask").set_text)
-        self.if_available_set(data, "net_gateway",
-                              self.get("gateway").set_text)
-
+        network_frame = NetworkSettingsSection(self)
+        network_frame.show_ui(data)
         #Name Servers Frame
         if data.has_key("name_mode"):
             if data["name_mode"] == "default":
