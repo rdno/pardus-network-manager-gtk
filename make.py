@@ -16,6 +16,9 @@ def pot():
     os.system("%s -f %s --output=%s" % (xgettext_cmd,
                                         "po/POTFILES.in",
                                         "po/network_manager_gtk.pot"))
+def tags():
+    os.system("etags network-manager-gtk.py network_manager_gtk/*.py")
+
 def glade_extract(file):
     """intltool-extract glade file to .h
     Arguments:
@@ -24,14 +27,17 @@ def glade_extract(file):
     os.system("intltool-extract --type=gettext/glade ui/"+file)
 
 def help():
-    print """make pot: makes .pot
-make mo : makes .mo files"""
+    print """make pot : makes .pot
+make mo  : makes .mo files
+make tags: makes TAGS (emacs) file"""
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         if sys.argv[1] == "mo":
             mo()
         elif sys.argv[1] == "pot":
             pot()
+        elif sys.argv[1] == "tags":
+            tags()
         else:
             help()
     else:
