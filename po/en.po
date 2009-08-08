@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Network Manager\n"
+"Project-Id-Version: Network Manager GTK\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-01 12:39+0300\n"
+"POT-Creation-Date: 2009-08-08 13:17+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Rıdvan Örsvuran <flasherdn@gmail.com>\n"
 "Language-Team:  <flasherdn@gmail.com>\n"
@@ -10,82 +10,106 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: network_manager_gtk/widgets.py:52
+#: network_manager_gtk/widgets.py:54
 msgid "Edit"
 msgstr "Edit"
 
-#: network_manager_gtk/widgets.py:53
+#: network_manager_gtk/widgets.py:55
 msgid "Delete"
 msgstr "Delete"
 
-#: network_manager_gtk/widgets.py:74
+#: network_manager_gtk/widgets.py:76
 msgid "Disconnected"
 msgstr "Disconnected"
 
-#: network_manager_gtk/widgets.py:75
+#: network_manager_gtk/widgets.py:77
 msgid "Connected"
 msgstr "Connected"
 
-#: network_manager_gtk/widgets.py:76
+#: network_manager_gtk/widgets.py:78
 msgid "Connecting"
 msgstr "Connecting"
 
-#: network_manager_gtk/widgets.py:78
+#: network_manager_gtk/widgets.py:80
 msgid "Cable or device is unplugged."
 msgstr "Cable or device is unplugged."
+
+#: network_manager_gtk/widgets.py:127
+msgid "Name"
+msgstr "Name"
+
+#: network_manager_gtk/widgets.py:128
+msgid "Quality"
+msgstr "Quality"
+
+#: network_manager_gtk/widgets.py:135
+#, python-format
+msgid "%d%%"
+msgstr "%d%%"
+
+#: network_manager_gtk/widgets.py:143
+msgid "Scanning..."
+msgstr "Scanning..."
+
+#: network_manager_gtk/widgets.py:324
+msgid "No Authentication"
+msgstr "No Authentication"
 
 #: ui/main.glade.h:2
 msgid "Network Manager"
 msgstr "Network Manager"
 
-#: ui/edit.glade.h:2
-#, no-c-format
-msgid "<b>Device Name:</b>%s"
-msgstr "<b>Device Name:</b>%s"
-
-#: ui/edit.glade.h:3
+#: ui/edit.glade.h:1
 msgid "<b>Name Servers</b>"
 msgstr "<b>Name Servers</b>"
 
-#: ui/edit.glade.h:4
+#: ui/edit.glade.h:2
 msgid "<b>Network Settings</b>"
 msgstr "<b>Network Settings</b>"
 
-#: ui/edit.glade.h:5
+#: ui/edit.glade.h:3
 msgid "<b>Profile</b>"
 msgstr "<b>Profile</b>"
 
-#: ui/edit.glade.h:6
+#: ui/edit.glade.h:4
 msgid "<b>Wireless</b>"
 msgstr "<b>Wireless</b>"
 
-#: ui/edit.glade.h:7
+#: ui/edit.glade.h:5
 msgid "Address:"
 msgstr "Address:"
 
-#: ui/edit.glade.h:8
+#: ui/edit.glade.h:6
 msgid "Apply"
 msgstr "Apply"
 
-#: ui/edit.glade.h:9
+#: ui/edit.glade.h:7
 msgid "Automatic"
 msgstr "Automatic"
 
-#: ui/edit.glade.h:10
+#: ui/edit.glade.h:8
 msgid "Cancel"
 msgstr "Cancel"
 
-#: ui/edit.glade.h:11
+#: ui/edit.glade.h:9
+msgid "Change Password"
+msgstr "Change Password"
+
+#: ui/edit.glade.h:10
 msgid "Custom"
 msgstr "Custom"
 
-#: ui/edit.glade.h:12
+#: ui/edit.glade.h:11
 msgid "Default"
 msgstr "Default"
 
-#: ui/edit.glade.h:13
+#: ui/edit.glade.h:12
 msgid "Default Gateway:"
 msgstr "Default Gateway:"
+
+#: ui/edit.glade.h:13
+msgid "ESSID:"
+msgstr "ESSID:"
 
 #: ui/edit.glade.h:15
 msgid "Edit Connection"

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Network Manager gtk\n"
+"Project-Id-Version: Network Manager GTK\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-01 12:39+0300\n"
+"POT-Creation-Date: 2009-08-08 13:17+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Rıdvan Örsvuran <flasherdn@gmail.com>\n"
 "Language-Team:  <flasherdn@gmail.com>\n"
@@ -10,90 +10,114 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: network_manager_gtk/widgets.py:52
+#: network_manager_gtk/widgets.py:54
 msgid "Edit"
 msgstr "Düzenle"
 
-#: network_manager_gtk/widgets.py:53
+#: network_manager_gtk/widgets.py:55
 msgid "Delete"
 msgstr "Sil"
 
-#: network_manager_gtk/widgets.py:74
+#: network_manager_gtk/widgets.py:76
 msgid "Disconnected"
 msgstr "Bağlı Değil"
 
-#: network_manager_gtk/widgets.py:75
+#: network_manager_gtk/widgets.py:77
 msgid "Connected"
 msgstr "Bağlı"
 
-#: network_manager_gtk/widgets.py:76
+#: network_manager_gtk/widgets.py:78
 msgid "Connecting"
 msgstr "Bağlanıyor"
 
-#: network_manager_gtk/widgets.py:78
+#: network_manager_gtk/widgets.py:80
 msgid "Cable or device is unplugged."
 msgstr "Kablo ya da aygıt bağlı değil."
+
+#: network_manager_gtk/widgets.py:127
+msgid "Name"
+msgstr "İsim"
+
+#: network_manager_gtk/widgets.py:128
+msgid "Quality"
+msgstr "Kalite"
+
+#: network_manager_gtk/widgets.py:135
+#, python-format
+msgid "%d%%"
+msgstr "%%%d"
+
+#: network_manager_gtk/widgets.py:143
+msgid "Scanning..."
+msgstr "Taranıyor..."
+
+#: network_manager_gtk/widgets.py:324
+msgid "No Authentication"
+msgstr "Doğrulama Yok"
 
 #: ui/main.glade.h:2
 msgid "Network Manager"
 msgstr "Ağ Yöneticisi"
 
-#: ui/edit.glade.h:2
-#, no-c-format
-msgid "<b>Device Name:</b>%s"
-msgstr "<b>Aygıt Adı:</b>%s"
-
-#: ui/edit.glade.h:3
+#: ui/edit.glade.h:1
 msgid "<b>Name Servers</b>"
 msgstr "<b>İsim Sunucuları</b>"
 
-#: ui/edit.glade.h:4
+#: ui/edit.glade.h:2
 msgid "<b>Network Settings</b>"
 msgstr "<b>Ağ Ayarları</b>"
 
-#: ui/edit.glade.h:5
+#: ui/edit.glade.h:3
 msgid "<b>Profile</b>"
 msgstr "<b>Profil</b>"
 
-#: ui/edit.glade.h:6
+#: ui/edit.glade.h:4
 msgid "<b>Wireless</b>"
 msgstr "<b>Kablosuz</b>"
 
-#: ui/edit.glade.h:7
+#: ui/edit.glade.h:5
 msgid "Address:"
 msgstr "Adres:"
 
-#: ui/edit.glade.h:8
+#: ui/edit.glade.h:6
 msgid "Apply"
 msgstr "Uygula"
 
-#: ui/edit.glade.h:9
+#: ui/edit.glade.h:7
 msgid "Automatic"
 msgstr "Otomatik"
 
-#: ui/edit.glade.h:10
+#: ui/edit.glade.h:8
 msgid "Cancel"
 msgstr "İptal"
 
-#: ui/edit.glade.h:11
+#: ui/edit.glade.h:9
+msgid "Change Password"
+msgstr "Parolayı Değiştir"
+
+#: ui/edit.glade.h:10
 msgid "Custom"
-msgstr "özel"
+msgstr "Özel"
+
+#: ui/edit.glade.h:11
+msgid "Default"
+msgstr "Öntanımlı"
 
 #: ui/edit.glade.h:12
-msgid "Default"
-msgstr "öntanımlı"
-
-#: ui/edit.glade.h:13
 msgid "Default Gateway:"
 msgstr "Öntanımlı Ağ Geçidi:"
 
+#: ui/edit.glade.h:13
+msgid "ESSID:"
+msgstr "ESSID:"
+
 #: ui/edit.glade.h:15
 msgid "Edit Connection"
-msgstr "Bağlanıyı Düzenle"
+msgstr "Bağlantıyı Düzenle"
 
 #: ui/edit.glade.h:16
 msgid "Hide Password"
-msgstr "parolayı Gizle"
+msgstr "Parolayı Sakla"
 
 #: ui/edit.glade.h:17
 msgid "Network Mask:"
@@ -105,7 +129,7 @@ msgstr "Parola:"
 
 #: ui/edit.glade.h:19
 msgid "Profile Name:"
-msgstr "Profil İsmi:"
+msgstr "Profil Adı:"
 
 #: ui/edit.glade.h:20
 msgid "Scan"
@@ -117,7 +141,7 @@ msgstr "Güvenlik Türü:"
 
 #: ui/edit.glade.h:22
 msgid "Use DHCP"
-msgstr "DHCP kullan"
+msgstr "DHCP Kullan:"
 
 #: ui/edit.glade.h:23
 msgid "Use Manual Settings"
