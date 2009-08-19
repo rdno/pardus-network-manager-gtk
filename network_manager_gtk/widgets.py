@@ -141,7 +141,8 @@ class WifiItemHolder(gtk.ScrolledWindow):
         self.data = []
         self.setup_view()
         for remote in data:
-            self.store.append([remote["remote"], _("%d%%") % int(remote["quality"])])
+            self.store.append([remote["remote"],
+                               _("%d%%") % int(remote["quality"])])
             self.data.append(remote)
         self.add_with_viewport(self.view)
         self.show_all()
@@ -368,6 +369,8 @@ class WirelessSection(EditSection):
             self.prepare_security_types(authType)
             if self.with_password:
                 self.show_password(self.password_state)
+            if self.get("security_types").get_active() == 0:
+                self.show_password(False)
             self.wifiitems = WifiItemHolder()
             self.get("wireless_table").attach(self.wifiitems,
                                               0, 1, 0, 4,
