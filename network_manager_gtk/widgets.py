@@ -219,17 +219,42 @@ class NetworkSettingsSection(EditSection):
         self.get("networkmask_lb").set_sensitive(state)
         self.get("gateway").set_sensitive(state)
         self.get("gateway_lb").set_sensitive(state)
+        # custom things
+        self.get("custom_gateway").set_sensitive(not state)
+        self.get("custom_address").set_sensitive(not state)
+        if not state:
+            self._on_custom_address(self.get("custom_address"))
+            self._on_custom_gateway(self.get("custom_gateway"))
+    def _on_custom_address(self, widget):
+        state = widget.get_active()
+        self.get("address").set_sensitive(state)
+        self.get("address_lb").set_sensitive(state)
+        self.get("networkmask").set_sensitive(state)
+        self.get("networkmask_lb").set_sensitive(state)
+    def _on_custom_gateway(self, widget):
+        state = widget.get_active()
+        self.get("gateway").set_sensitive(state)
+        self.get("gateway_lb").set_sensitive(state)
     def listen_signals(self):
         self.signal_connect("on_dhcp_rb_clicked",
                             self._on_type_changed)
         self.signal_connect("on_manual_rb_clicked",
                              self._on_type_changed)
+        self.signal_connect("on_custom_gateway_toggled",
+                            self._on_custom_gateway)
+        self.signal_connect("on_custom_address_toggled",
+                            self._on_custom_address)
     def show_ui(self, data):
         if data.has_key("net_mode"):
             self.listen_signals()
             if data["net_mode"] == "auto":
                 self.get("dhcp_rb").set_active(True)
                 self.set_manual_network(False)
+                print data
+                if self.is_custom(data, "net_gateway"):
+                    self.get("custom_gateway").set_active(True)
+                if self.is_custom(data, "net_address"):
+                    self.get("custom_address").set_active(True)
             else:
                 self.get("manual_rb").set_active(False)
                 self.set_manual_network(True)
@@ -240,6 +265,11 @@ class NetworkSettingsSection(EditSection):
                               self.get("networkmask").set_text)
         self.if_available_set(data, "net_gateway",
                               self.get("gateway").set_text)
+    def is_custom(self, data, key):
+        if data.has_key(key):
+            if data[key] != "":
+                return True
+        return False
 
 class NameServerSection(EditSection):
     def __init__(self, parent):
@@ -369,7 +399,7 @@ class WirelessSection(EditSection):
             self.prepare_security_types(authType)
             if self.with_password:
                 self.show_password(self.password_state)
-            if self.get("security_types").get_active() == 0:
+            if self.get("security_types").get_active() == 0:#No Auth
                 self.show_password(False)
             self.wifiitems = WifiItemHolder()
             self.get("wireless_table").attach(self.wifiitems,

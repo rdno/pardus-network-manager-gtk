@@ -287,7 +287,7 @@
                       <widget class="GtkTable" id="table2">
                         <property name="visible">True</property>
                         <property name="n_rows">3</property>
-                        <property name="n_columns">3</property>
+                        <property name="n_columns">4</property>
                         <property name="row_spacing">5</property>
                         <child>
                           <widget class="GtkRadioButton" id="manual_rb">
@@ -381,6 +381,39 @@
                             <property name="top_attach">2</property>
                             <property name="bottom_attach">3</property>
                           </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkCheckButton" id="custom_address">
+                            <property name="label" translatable="yes">Custom</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="draw_indicator">True</property>
+                            <signal name="toggled" handler="on_custom_address_toggled"/>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkCheckButton" id="custom_gateway">
+                            <property name="label" translatable="yes">Custom</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="draw_indicator">True</property>
+                            <signal name="toggled" handler="on_custom_gateway_toggled"/>
+                          </widget>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="right_attach">4</property>
+                            <property name="top_attach">2</property>
+                            <property name="bottom_attach">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                         <child>
                           <placeholder/>
