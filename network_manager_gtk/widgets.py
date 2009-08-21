@@ -360,6 +360,7 @@ class WirelessSection(EditSection):
             self.get("changepass_btn").hide()
     def change_password(self, widget=None):
         self.show_password(True)
+        print "heyya"
         authType = self.iface.authType(self.package,
                                        self.connection)
         authInfo = self.iface.authInfo(self.package,
@@ -398,7 +399,7 @@ class WirelessSection(EditSection):
     def prepare_security_types(self, authType):
         self.set_security_types_style()
         noauth = _("No Authentication")
-        self._authMethods = [(0, "none", noauth)]
+        self._authMethods = [("none", noauth)]
         append_to_types = self.get("security_types").append_text
         append_to_types(noauth)
         self.get("security_types").set_active(0)
@@ -406,7 +407,7 @@ class WirelessSection(EditSection):
         self.with_password = False
         for name, desc in self.iface.authMethods(self.package):
             append_to_types(desc)
-            self._authMethods.append((index, name, desc))
+            self._authMethods.append((name, desc))
             if name == authType:
                 self.get("security_types").set_active(index)
                 self.with_password = True
@@ -423,6 +424,7 @@ class WirelessSection(EditSection):
         else:
             print exception
     def show_ui(self, data, caps):
+        self.listen_signals()
         self.device = data["device_id"]
         self.if_available_set(data, "remote",
                               self.get("essid_text").set_text)
@@ -441,6 +443,29 @@ class WirelessSection(EditSection):
                                               gtk.EXPAND|gtk.FILL,
                                               gtk.EXPAND|gtk.FILL)
         self.scan()
+    def collect_data(self, data):
+        super(WirelessSection, self).collect_data(data)
+        data["remote"] = self.get_text_of("essid_text")
+        data["apmac"] = u"" #??? what is it
+
+        #Security
+        data["auth"] = unicode(self._authMethods[
+                self.get("security_types").get_active()][0])
+        if data["auth"] != u"none":
+            params = self.iface.authParameters("wireless_tools",
+                                               data["auth"])
+            if len(params) == 1:
+                key = "auth_%s" % params[0][0]
+                if self.get("pass_text").props.visible:
+                    data[key] = self.get_text_of("pass_text")
+                else:
+                    info = self.iface.authInfo(self.parent._package,
+                                               self.parent._connection)
+                    data[key] = info.values()[0]
+            else:
+                print "TODO:more than one security params"
+                print "at collect_data\n"
+
 
 # end Edit Window Sections
 
@@ -464,8 +489,9 @@ class EditInterface(object):
         self.insertData()
     def apply(self, widget):
         data = self.collect_data()
+        print data
         try:
-            #to connect
+            pass
             self.iface.updateConnection(self._package,
                                         data["name"],
                                         data)
@@ -510,12 +536,13 @@ class EditInterface(object):
             self.wireless_frame.show_ui(data, caps)
         else:
             self.get("wireless_frame").hide()
-        self.collect_data()
     def collect_data(self):
         data = {}
         self.profile_frame.collect_data(data)
         self.network_frame.collect_data(data)
         self.name_frame.collect_data(data)
+        if self._package == "wireless_tools":
+            self.wireless_frame.collect_data(data)
         return data
     def getWindow(self):
         """returns window
