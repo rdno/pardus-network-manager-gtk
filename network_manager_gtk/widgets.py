@@ -195,6 +195,13 @@ class EditSection(object):
         arg:data[key]"""
         if data.has_key(key):
             method(data[key])
+    def get_text_of(self, name):
+        """gets text from widget in unicode"""
+        return unicode(self.get(name).get_text())
+    def collect_data(self, data):
+        """collect data from ui and append datas to
+        given(data) dictionary"""
+        pass
 
 class ProfileSection(EditSection):
     def __init__(self, parent):
@@ -203,7 +210,13 @@ class ProfileSection(EditSection):
         self.get("profilename").set_text(data[u"name"])
         self.if_available_set(data, "device_name",
                               self.get("device_name_label").set_text)
+        self.device_id = data["device_id"]
         #TODO:more than one device support
+    def collect_data(self, data):
+        super(ProfileSection, self).collect_data(data)
+        data["name"] = self.get_text_of("profilename")
+        data["device_id"] = unicode(self.device_id)
+
 class NetworkSettingsSection(EditSection):
     def __init__(self, parent):
         super(NetworkSettingsSection, self).__init__(parent)
@@ -250,7 +263,6 @@ class NetworkSettingsSection(EditSection):
             if data["net_mode"] == "auto":
                 self.get("dhcp_rb").set_active(True)
                 self.set_manual_network(False)
-                print data
                 if self.is_custom(data, "net_gateway"):
                     self.get("custom_gateway").set_active(True)
                 if self.is_custom(data, "net_address"):
@@ -270,6 +282,19 @@ class NetworkSettingsSection(EditSection):
             if data[key] != "":
                 return True
         return False
+    def collect_data(self, data):
+        super(NetworkSettingsSection, self).collect_data(data)
+        data["net_mode"] = u"auto"
+        data["net_address"] = u""
+        data["net_mask"] = u""
+        data["net_gateway"] = u""
+        if self.get("manual_rb").get_active():
+            data["net_mode"] = u"manual"
+        if self.get("address").state == gtk.STATE_NORMAL:
+            data["net_address"] = self.get_text_of("address")
+            data["net_mask"] = self.get_text_of("networkmask")
+        if self.get("gateway").state == gtk.STATE_NORMAL:
+            data["net_gateway"] = self.get_text_of("gateway")
 
 class NameServerSection(EditSection):
     def __init__(self, parent):
@@ -302,6 +327,15 @@ class NameServerSection(EditSection):
                 self.set_custom_name(True)
         self.if_available_set(data, "name_server",
                               self.get("ns_custom_text").set_text)
+    def collect_data(self, data):
+        super(NameServerSection, self).collect_data(data)
+        data["name_mode"] = u"default"
+        data["name_server"] = u""
+        if self.get("ns_auto_rb").get_active():
+            data["name_mode"] = u"auto"
+        if self.get("ns_custom_rb").get_active():
+            data["name_mode"] = u"custom"
+            data["name_server"] = self.get_text_of("ns_custom_text")
 
 class WirelessSection(EditSection):
     def __init__(self, parent, password_state="hidden"):
@@ -426,29 +460,63 @@ class EditInterface(object):
         self._connection = connection
         self._xml = glade.XML("ui/edit.glade")
         self.get  = self._xml.get_widget
+        self.listen_signals()
         self.insertData()
+    def apply(self, widget):
+        data = self.collect_data()
+        try:
+            #to connect
+            self.iface.updateConnection(self._package,
+                                        data["name"],
+                                        data)
+        except Exception, e:
+            print "Exception:", unicode(e)
+
+        if not self.name == data["name"]:
+            self.iface.deleteConnection(self._package, self.name)
+        if self.is_up:
+            self.iface.connect(self._package, self.name)
+        self.getWindow().destroy()
+    def cancel(self, widget):
+        self.getWindow().destroy()
+    def listen_signals(self):
+        self._xml.signal_connect("apply_btn_clicked",
+                                 self.apply)
+        self._xml.signal_connect("cancel_btn_clicked",
+                                 self.cancel)
     def insertData(self):
         """show preferences
         """
         data = self.iface.info(self._package,
                                self._connection)
+        self.name = data["name"]
+        self.is_up = False
+        if data.has_key("state"):
+            if data["state"][0:2] == "up":
+                self.is_up = True
         #Profile Frame
-        profile_frame = ProfileSection(self)
-        profile_frame.show_ui(data)
+        self.profile_frame = ProfileSection(self)
+        self.profile_frame.show_ui(data)
         #Network Settings Frame
-        network_frame = NetworkSettingsSection(self)
-        network_frame.show_ui(data)
+        self.network_frame = NetworkSettingsSection(self)
+        self.network_frame.show_ui(data)
         #Name Servers Frame
-        name_frame = NameServerSection(self)
-        name_frame.show_ui(data)
+        self.name_frame = NameServerSection(self)
+        self.name_frame.show_ui(data)
         # Wireless Frame
         if self._package == "wireless_tools":
             caps = self.iface.capabilities(self._package)
-            wireless_frame = WirelessSection(self)
-            wireless_frame.show_ui(data, caps)
+            self.wireless_frame = WirelessSection(self)
+            self.wireless_frame.show_ui(data, caps)
         else:
             self.get("wireless_frame").hide()
-
+        self.collect_data()
+    def collect_data(self):
+        data = {}
+        self.profile_frame.collect_data(data)
+        self.network_frame.collect_data(data)
+        self.name_frame.collect_data(data)
+        return data
     def getWindow(self):
         """returns window
         """

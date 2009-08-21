@@ -552,6 +552,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
+                <signal name="clicked" handler="cancel_btn_clicked"/>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -566,6 +567,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
+                <signal name="clicked" handler="apply_btn_clicked"/>
               </widget>
               <packing>
                 <property name="expand">False</property>
