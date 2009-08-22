@@ -63,16 +63,17 @@ class Base(object):
         for package in self.iface.packages():
             self.widgets[package] = {}
             for connection in self.iface.connections(package):
-                state = self.iface.info(package, connection)[u"state"]
-                con_wg = ConnectionWidget(package,
-                                          connection,
-                                          state)
-                con_wg.connectSignals(self._onConnectionClicked,
-                                      self._onConnectionEdit,
-                                      self._onConnectionDelete)
-                self.vbox.pack_start(con_wg, expand=False, fill=False)
-                self.widgets[package][connection] = con_wg
-
+               self.add_to_vbox(package, connection)
+    def add_to_vbox(self, package, connection):
+        state = self.iface.info(package, connection)[u"state"]
+        con_wg = ConnectionWidget(package,
+                                  connection,
+                                  state)
+        con_wg.connectSignals(self._onConnectionClicked,
+                              self._onConnectionEdit,
+                              self._onConnectionDelete)
+        self.vbox.pack_start(con_wg, expand=False, fill=False)
+        self.widgets[package][connection] = con_wg
     def _listener(self, package, signal, args):
         """comar listener
         Arguments:
@@ -86,7 +87,14 @@ class Base(object):
         elif signal == "deviceChanged":
             print "TODO:Listen comar signal deviceChanged "
         elif signal == "connectionChanged":
-            print "TODO:Listen comar signal connectionChanged"
+            if args[0] == u"changed":
+                pass#Nothing to do ?
+            elif args[0] == u"added":
+                self.add_to_vbox(package, args[1])
+                self.vbox.show_all()
+            elif args[0] == u"deleted":
+                self.vbox.remove(self.widgets[package][args[1]])
+                pass
 
     def _dbusMainLoop(self):
         from dbus.mainloop.glib import DBusGMainLoop
