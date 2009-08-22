@@ -397,7 +397,6 @@ class WirelessSection(EditSection):
             index += 1
     def on_wifi_clicked(self, widget, callback_data):
         data = callback_data["get_connection"]()
-        # data["remote"] = isim, data["encryption"]
         self.get("essid_text").set_text(data["remote"])
         for index, method in enumerate(self._authMethods):
             if method[0] == data["encryption"]:
@@ -437,7 +436,7 @@ class WirelessSection(EditSection):
             self.show_password(self.with_password)
             self.wifiitems = WifiItemHolder()
             self.get("wireless_table").attach(self.wifiitems,
-                                              0, 1, 0, 4,
+                                              0, 1, 0, 3,
                                               gtk.EXPAND|gtk.FILL,
                                               gtk.EXPAND|gtk.FILL)
         self.scan()
