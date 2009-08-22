@@ -129,9 +129,8 @@ class WifiItemHolder(gtk.ScrolledWindow):
         cursor = self.view.get_cursor()
         if cursor[0]:
             data = self.data[cursor[0][0]]
-        else:
-            data = None
-        return data
+            return data
+        return None
     def listen_change(self, handler):
         self.view.connect("cursor-changed", handler,
                           {"get_connection":self.get_active})
@@ -382,7 +381,15 @@ class WirelessSection(EditSection):
         self.get("scan_btn").hide()
         self.wifiitems.set_scanning(True)
         self.iface.scanRemote(self.device , self.package, self.wifilist)
+    def security_types_changed(self, widget):
+        index = widget.get_active()
+        if index == 0:
+            self.show_password(False)
+        else:
+            self.show_password(True)
     def listen_signals(self):
+        self.signal_connect("on_security_types_changed",
+                            self.security_types_changed)
         #Password related
         self.signal_connect("on_changepass_btn_clicked",
                             self.change_password)
@@ -413,7 +420,9 @@ class WirelessSection(EditSection):
                 self.with_password = True
             index += 1
     def on_wifi_clicked(self, widget, callback_data):
-        print "clicked:", callback_data["get_connection"]()
+        data = callback_data["get_connection"]()
+        # data["remote"] = isim, data["encryption"]
+        print data
     def wifilist(self, package, exception, args):
         self.get("scan_btn").show()
         self.signal_connect("on_scan_btn_clicked",
@@ -433,10 +442,11 @@ class WirelessSection(EditSection):
             authType = self.iface.authType(self.parent._package,
                                            self.parent._connection)
             self.prepare_security_types(authType)
+            self.get("hidepass_cb").set_active(True)
             if self.with_password:
                 self.show_password(self.password_state)
-            if self.get("security_types").get_active() == 0:#No Auth
-                self.show_password(False)
+            #if self.get("security_types").get_active() == 0:#No Auth
+            #    self.show_password(False)
             self.wifiitems = WifiItemHolder()
             self.get("wireless_table").attach(self.wifiitems,
                                               0, 1, 0, 4,

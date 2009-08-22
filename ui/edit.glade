@@ -138,6 +138,7 @@
                     <child>
                       <widget class="GtkComboBox" id="security_types">
                         <property name="visible">True</property>
+                        <signal name="changed" handler="on_security_types_changed"/>
                       </widget>
                       <packing>
                         <property name="left_attach">2</property>
