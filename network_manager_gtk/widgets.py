@@ -337,42 +337,21 @@ class NameServerSection(EditSection):
             data["name_server"] = self.get_text_of("ns_custom_text")
 
 class WirelessSection(EditSection):
-    def __init__(self, parent, password_state="hidden"):
+    def __init__(self, parent):
         super(WirelessSection, self).__init__(parent)
-        self.password_state = password_state
         self.iface = parent.iface
         self.package = parent._package
         self.connection = parent._connection
     # --- Password related
     def show_password(self, state):
-        if (state == False) | (state == "hidden"):
+        if not state:
             self.get("hidepass_cb").hide()
             self.get("pass_text").hide()
             self.get("pass_lb").hide()
-        elif state == True:
+        else:
             self.get("hidepass_cb").show()
             self.get("pass_text").show()
             self.get("pass_lb").show()
-        if state == "hidden":
-            self.get("changepass_btn").show()
-        else:
-            self.get("changepass_btn").hide()
-    def change_password(self, widget=None):
-        self.show_password(True)
-        print "heyya"
-        authType = self.iface.authType(self.package,
-                                       self.connection)
-        authInfo = self.iface.authInfo(self.package,
-                                       self.connection)
-        authParams = self.iface.authParameters(self.package,
-                                               authType)
-        if len(authParams) == 1:
-            password = authInfo.values()[0]
-            self.get("pass_text").set_text(password)
-            self.get("hidepass_cb").set_active(True)
-        elif len(authParams) > 1:
-            print "\nTODO:learn what is securityDialog"
-            print "--> at svn-24515 / base.py line:474\n"
     def hide_password(self, widget):
         visibility = not widget.get_active()
         self.get("pass_text").set_visibility(visibility)
@@ -390,9 +369,6 @@ class WirelessSection(EditSection):
     def listen_signals(self):
         self.signal_connect("on_security_types_changed",
                             self.security_types_changed)
-        #Password related
-        self.signal_connect("on_changepass_btn_clicked",
-                            self.change_password)
         self.signal_connect("on_hidepass_cb_toggled",
                             self.hide_password)
     def set_security_types_style(self):
@@ -422,7 +398,10 @@ class WirelessSection(EditSection):
     def on_wifi_clicked(self, widget, callback_data):
         data = callback_data["get_connection"]()
         # data["remote"] = isim, data["encryption"]
-        print data
+        self.get("essid_text").set_text(data["remote"])
+        for index, method in enumerate(self._authMethods):
+            if method[0] == data["encryption"]:
+                self.get("security_types").set_active(index)
     def wifilist(self, package, exception, args):
         self.get("scan_btn").show()
         self.signal_connect("on_scan_btn_clicked",
@@ -439,14 +418,23 @@ class WirelessSection(EditSection):
                               self.get("essid_text").set_text)
         modes = caps["modes"].split(",")
         if "auth" in modes:
-            authType = self.iface.authType(self.parent._package,
-                                           self.parent._connection)
+            authType = self.iface.authType(self.package,
+                                           self.connection)
             self.prepare_security_types(authType)
             self.get("hidepass_cb").set_active(True)
             if self.with_password:
-                self.show_password(self.password_state)
-            #if self.get("security_types").get_active() == 0:#No Auth
-            #    self.show_password(False)
+                authType = self.iface.authType(self.package,
+                                               self.connection)
+                authInfo = self.iface.authInfo(self.package,
+                                               self.connection)
+                authParams = self.iface.authParameters(self.package,
+                                                       authType)
+                if len(authParams) == 1:
+                    password = authInfo.values()[0]
+                    self.get("pass_text").set_text(password)
+                elif len(authParams) > 1:
+                    print "\nTODO:Dynamic WEP support"
+            self.show_password(self.with_password)
             self.wifiitems = WifiItemHolder()
             self.get("wireless_table").attach(self.wifiitems,
                                               0, 1, 0, 4,
@@ -464,17 +452,12 @@ class WirelessSection(EditSection):
         if data["auth"] != u"none":
             params = self.iface.authParameters("wireless_tools",
                                                data["auth"])
+            data["auth_%s" % param]
             if len(params) == 1:
                 key = "auth_%s" % params[0][0]
-                if self.get("pass_text").props.visible:
-                    data[key] = self.get_text_of("pass_text")
-                else:
-                    info = self.iface.authInfo(self.parent._package,
-                                               self.parent._connection)
-                    data[key] = info.values()[0]
+                data[key] = self.get_text_of("pass_txt")
             else:
-                print "TODO:more than one security params"
-                print "at collect_data\n"
+                print "TODO:Dynamic WEP Support"
 
 
 # end Edit Window Sections
