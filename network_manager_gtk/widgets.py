@@ -451,10 +451,9 @@ class WirelessSection(EditSection):
         if data["auth"] != u"none":
             params = self.iface.authParameters("wireless_tools",
                                                data["auth"])
-            data["auth_%s" % param]
             if len(params) == 1:
                 key = "auth_%s" % params[0][0]
-                data[key] = self.get_text_of("pass_txt")
+                data[key] = self.get_text_of("pass_text")
             else:
                 print "TODO:Dynamic WEP Support"
 
@@ -481,9 +480,7 @@ class EditInterface(object):
         self.insertData()
     def apply(self, widget):
         data = self.collect_data()
-        print data
         try:
-            pass
             self.iface.updateConnection(self._package,
                                         data["name"],
                                         data)
