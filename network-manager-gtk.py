@@ -31,6 +31,7 @@ from network_manager_gtk.widgets import ConnectionWidget
 from network_manager_gtk.widgets import MainInterface
 from network_manager_gtk.widgets import EditInterface
 
+from network_manager_gtk.translation import _
 
 class Base(object):
     def __init__(self):
@@ -51,11 +52,27 @@ class Base(object):
         self.iface.toggle(callback_data['package'],
                           callback_data['connection'])
     def _onConnectionEdit(self, widget, callback_data):
-        a = EditInterface(callback_data['package'],
-                          callback_data['connection'])
-        a.getWindow().show()
+        try:
+            a = EditInterface(callback_data['package'],
+                              callback_data['connection'])
+            a.getWindow().props.modal = True
+            a.getWindow().show()
+        except Exception, e:
+            print "Exception:", e
     def _onConnectionDelete(self, widget, callback_data):
-        print "TODO:onConnection Delete"
+        message = _("Do you wanna delete the connection '%s' ? " % \
+                    callback_data["connection"])
+        dialog = gtk.MessageDialog(type=gtk.MESSAGE_WARNING,
+                                   buttons=gtk.BUTTONS_YES_NO,
+                                   message_format=message)
+        response = dialog.run()
+        if response == gtk.RESPONSE_YES:
+            try:
+                self.iface.deleteConnection(callback_data['package'],
+                                            callback_data['connection'])
+            except Exception, e:
+                print "Exception:",e
+        dialog.destroy()
     def showConnections(self):
         """show connection on gui
         """
