@@ -60,11 +60,11 @@ class Base(object):
         except Exception, e:
             print "Exception:", e
     def _onConnectionDelete(self, widget, callback_data):
-        message = _("Do you wanna delete the connection '%s' ? " % \
-                    callback_data["connection"])
+        m = _("Do you wanna delete the connection  '%(name)s' ?") % \
+            {"name":callback_data['connection']}
         dialog = gtk.MessageDialog(type=gtk.MESSAGE_WARNING,
                                    buttons=gtk.BUTTONS_YES_NO,
-                                   message_format=message)
+                                   message_format=m)
         response = dialog.run()
         if response == gtk.RESPONSE_YES:
             try:

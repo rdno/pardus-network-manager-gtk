@@ -8,13 +8,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-08 13:17+0300\n"
+"POT-Creation-Date: 2009-08-23 11:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: network-manager-gtk.py:63
+#, python-format
+msgid "Do you wanna delete the connection  '%(name)s' ?"
+msgstr ""
 
 #: network_manager_gtk/widgets.py:54
 msgid "Edit"
@@ -40,24 +45,24 @@ msgstr ""
 msgid "Cable or device is unplugged."
 msgstr ""
 
-#: network_manager_gtk/widgets.py:127
+#: network_manager_gtk/widgets.py:126
 msgid "Name"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:128
+#: network_manager_gtk/widgets.py:127
 msgid "Quality"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:135
+#: network_manager_gtk/widgets.py:144
 #, python-format
 msgid "%d%%"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:143
+#: network_manager_gtk/widgets.py:152
 msgid "Scanning..."
 msgstr ""
 
-#: network_manager_gtk/widgets.py:324
+#: network_manager_gtk/widgets.py:384
 msgid "No Authentication"
 msgstr ""
 
@@ -98,57 +103,53 @@ msgid "Cancel"
 msgstr ""
 
 #: ui/edit.glade.h:9
-msgid "Change Password"
-msgstr ""
-
-#: ui/edit.glade.h:10
 msgid "Custom"
 msgstr ""
 
-#: ui/edit.glade.h:11
+#: ui/edit.glade.h:10
 msgid "Default"
 msgstr ""
 
-#: ui/edit.glade.h:12
+#: ui/edit.glade.h:11
 msgid "Default Gateway:"
 msgstr ""
 
-#: ui/edit.glade.h:13
+#: ui/edit.glade.h:12
 msgid "ESSID:"
 msgstr ""
 
-#: ui/edit.glade.h:15
+#: ui/edit.glade.h:14
 msgid "Edit Connection"
 msgstr ""
 
-#: ui/edit.glade.h:16
+#: ui/edit.glade.h:15
 msgid "Hide Password"
 msgstr ""
 
-#: ui/edit.glade.h:17
+#: ui/edit.glade.h:16
 msgid "Network Mask:"
 msgstr ""
 
-#: ui/edit.glade.h:18
+#: ui/edit.glade.h:17
 msgid "Password:"
 msgstr ""
 
-#: ui/edit.glade.h:19
+#: ui/edit.glade.h:18
 msgid "Profile Name:"
 msgstr ""
 
-#: ui/edit.glade.h:20
+#: ui/edit.glade.h:19
 msgid "Scan"
 msgstr ""
 
-#: ui/edit.glade.h:21
+#: ui/edit.glade.h:20
 msgid "Security Type:"
 msgstr ""
 
-#: ui/edit.glade.h:22
+#: ui/edit.glade.h:21
 msgid "Use DHCP"
 msgstr ""
 
-#: ui/edit.glade.h:23
+#: ui/edit.glade.h:22
 msgid "Use Manual Settings"
 msgstr ""
