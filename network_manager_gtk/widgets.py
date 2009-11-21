@@ -157,7 +157,44 @@ class WifiItemHolder(gtk.ScrolledWindow):
 
 gobject.type_register(WifiItemHolder)
 
+class dummy_data_creator(object):
+    """create
+    """
 
+    def __init__(self,
+                 device,
+                 device_name,
+                 essid=None):
+        """init
+        Arguments:
+        - `device`:
+        - `essid`:
+        """
+        self._wireless = False
+        self._device = device
+        self._device_name = device_name
+        if essid is not None:
+            self._essid = essid
+            self._wireless = True
+    def get(self):
+        """get data
+        """
+        data = {}
+        if self._wireless:
+            data["name"] = self._essid
+        else:
+            data["name"] = "Kablo" #TODO: what?
+        data["device_id"] = self._device
+        data["device_name"] = self._device_name
+        #Network Settings
+        data["net_mode"] = "auto"
+        data["net_address"] = ""
+        data["net_mask"] = ""
+        data["net_gateway"] = ""
+        #Name Server Settings
+        data["name_mode"] = "default"
+        data["name_server"] = ""
+        return data
 
 class MainInterface(object):
     """Imports main window glade
@@ -170,8 +207,27 @@ class MainInterface(object):
         self._xml = glade.XML("ui/main.glade")
         self._xml.signal_connect("on_window_main_destroy",
                                 gtk.main_quit)
+        self._xml.signal_connect("on_new_clicked",
+                                 self.brand_new)
         self._window = self._xml.get_widget("window_main")
         self._holder = self._xml.get_widget("holder")
+        self.iface = NetworkIface()
+    def brand_new(self, widget):
+        """deneme
+
+        Arguments:
+
+        - `widget`:
+        """
+        pack = "net_tools"
+        device = self.iface.devices(pack).keys()[0]
+        name = self.iface.devices(pack)[device]
+        a = EditInterface(pack,
+                          "",
+                          is_new=True,
+                          new_data=dummy_data_creator(device, name).get())
+        a.getWindow().show()
+
     def getWindow(self):
         """returns window
         """
@@ -205,8 +261,9 @@ class EditSection(object):
 class ProfileSection(EditSection):
     def __init__(self, parent):
         super(ProfileSection, self).__init__(parent)
-    def show_ui(self, data):
-        self.get("profilename").set_text(data[u"name"])
+    def insert_data_and_show(self, data):
+        self.if_available_set(data, "name",
+                              self.get("profilename").set_text)
         self.if_available_set(data, "device_name",
                               self.get("device_name_label").set_text)
         self.device_id = data["device_id"]
@@ -256,7 +313,7 @@ class NetworkSettingsSection(EditSection):
                             self._on_custom_gateway)
         self.signal_connect("on_custom_address_toggled",
                             self._on_custom_address)
-    def show_ui(self, data):
+    def insert_data_and_show(self, data):
         if data.has_key("net_mode"):
             self.listen_signals()
             if data["net_mode"] == "auto":
@@ -312,9 +369,9 @@ class NameServerSection(EditSection):
                             self._on_type_changed)
         self.signal_connect("on_ns_auto_rb_clicked",
                             self._on_type_changed)
-    def show_ui(self, data):
+    def insert_data_and_show(self, data):
+        self.listen_signals()
         if data.has_key("name_mode"):
-            self.listen_signals()
             if data["name_mode"] == "default":
                 self.get("ns_default_rb").set_active(True)
                 self.set_custom_name(False)
@@ -342,6 +399,7 @@ class WirelessSection(EditSection):
         self.iface = parent.iface
         self.package = parent._package
         self.connection = parent._connection
+        self.is_new = parent.is_new
     # --- Password related
     def show_password(self, state):
         if not state:
@@ -410,13 +468,13 @@ class WirelessSection(EditSection):
             self.wifiitems.listen_change(self.on_wifi_clicked)
         else:
             print exception
-    def show_ui(self, data, caps):
+    def insert_data_and_show(self, data, caps):
         self.listen_signals()
         self.device = data["device_id"]
         self.if_available_set(data, "remote",
                               self.get("essid_text").set_text)
         modes = caps["modes"].split(",")
-        if "auth" in modes:
+        if ("auth" in modes) and (not self.is_new):
             authType = self.iface.authType(self.package,
                                            self.connection)
             self.prepare_security_types(authType)
@@ -434,16 +492,18 @@ class WirelessSection(EditSection):
                 elif len(authParams) > 1:
                     print "\nTODO:Dynamic WEP support"
             self.show_password(self.with_password)
-            self.wifiitems = WifiItemHolder()
-            self.get("wireless_table").attach(self.wifiitems,
-                                              0, 1, 0, 3,
-                                              gtk.EXPAND|gtk.FILL,
-                                              gtk.EXPAND|gtk.FILL)
+        if self.is_new:
+            pass
+        self.wifiitems = WifiItemHolder()
+        self.get("wireless_table").attach(self.wifiitems,
+                                          0, 1, 0, 3,
+                                          gtk.EXPAND|gtk.FILL,
+                                          gtk.EXPAND|gtk.FILL)
         self.scan()
     def collect_data(self, data):
         super(WirelessSection, self).collect_data(data)
         data["remote"] = self.get_text_of("essid_text")
-        data["apmac"] = u"" #??? what is it
+        data["apmac"] = u"" #i think it is Access Point MAC
 
         #Security
         data["auth"] = unicode(self._authMethods[
@@ -464,7 +524,11 @@ class EditInterface(object):
     """Imports edit window glade
     """
 
-    def __init__(self, package, connection):
+    def __init__(self,
+                 package,
+                 connection="",
+                 is_new=False,
+                 new_data={}):
         """init
         Arguments:
         - `package`:
@@ -477,6 +541,8 @@ class EditInterface(object):
         self._xml = glade.XML("ui/edit.glade")
         self.get  = self._xml.get_widget
         self.listen_signals()
+        self.is_new = is_new
+        self.new_data = new_data
         self.insertData()
     def apply(self, widget):
         data = self.collect_data()
@@ -502,8 +568,11 @@ class EditInterface(object):
     def insertData(self):
         """show preferences
         """
-        data = self.iface.info(self._package,
-                               self._connection)
+        if not self.is_new:
+            data = self.iface.info(self._package,
+                                   self._connection)
+        else:
+            data = self.new_data
         self.name = data["name"]
         self.is_up = False
         if data.has_key("state"):
@@ -511,20 +580,21 @@ class EditInterface(object):
                 self.is_up = True
         #Profile Frame
         self.profile_frame = ProfileSection(self)
-        self.profile_frame.show_ui(data)
+        self.profile_frame.insert_data_and_show(data)
         #Network Settings Frame
         self.network_frame = NetworkSettingsSection(self)
-        self.network_frame.show_ui(data)
+        self.network_frame.insert_data_and_show(data)
         #Name Servers Frame
         self.name_frame = NameServerSection(self)
-        self.name_frame.show_ui(data)
+        self.name_frame.insert_data_and_show(data)
         # Wireless Frame
         if self._package == "wireless_tools":
             caps = self.iface.capabilities(self._package)
             self.wireless_frame = WirelessSection(self)
-            self.wireless_frame.show_ui(data, caps)
+            self.wireless_frame.insert_data_and_show(data, caps)
         else:
             self.get("wireless_frame").hide()
+
     def collect_data(self):
         data = {}
         self.profile_frame.collect_data(data)
