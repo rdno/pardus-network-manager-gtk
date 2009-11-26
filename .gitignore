@@ -1,0 +1,6 @@
+*~
+*.pyc
+TAGS
+.directory
+#*
+*.glade.h
