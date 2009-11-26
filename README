@@ -1,16 +1,22 @@
 Network Manager GTK is port of Pardus network-manager.
 It uses same backend of qt version.
+
 To use:
 
 Make mo files with
 
-   $ python make.py mo
-
+    $ python make.py mo
 
 and start program
 
     $ python network-manager-gtk.py
 
+It can
+    * activate/deactivate profiles
+    * show and edit settings
 
-It can only activate/deactivate profiles and show
-setting on edit window right now.
+TODO
+   * New Connection Interface
+   * Icon Support
+   * Tray Icon
+   ? libnotify support
