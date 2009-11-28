@@ -42,8 +42,8 @@ class ConnectionWidget(gtk.Table):
         self._package_name = package_name
         self._connection_name = connection_name
         self._state = state
-        self._createUI()
-    def _createUI(self):
+        self._create_ui()
+    def _create_ui(self):
         """creates UI
         """
         self.check_btn = gtk.CheckButton()
@@ -63,12 +63,12 @@ class ConnectionWidget(gtk.Table):
                     gtk.SHRINK, gtk.SHRINK)
         self.attach(self.delete_btn, 3, 4, 0, 2,
                     gtk.SHRINK, gtk.SHRINK)
-        self.setMode(self._state.split(' '))
-    def setMode(self, args):
+        self.set_mode(self._state.split(' '))
+    def set_mode(self, args):
         """sets _info label text
         and is _on or not
         Arguments:
-        - `args`: state, detail
+        - `args`: [state, detail]
         """
         detail = ""
         if len(args) > 1:
@@ -84,27 +84,78 @@ class ConnectionWidget(gtk.Table):
             self._info.set_text(states[args[0]])
         else:
             self.check_btn.set_active(True)
-            self._info.set_markup('<span color="green">'+
-                                  args[1]+
+            self._info.set_markup(states[args[0]]+':'+
+                                  '<span color="green">'+
+                                  args[1] +
                                   '</span>')
-    def connectSignals(self, click_signal, edit_signal, delete_signal):
+    def connect_signals(self, callback):
         """connect widgets signals
+        returns {'action':(toggle | edit | delete)
+                 'package':package_name,
+                 'connection':connection_name}
         Arguments:
-        - `click_signal`: toggle connection signal
-        - `edit_signal`:  edit signal
-        - `delete_signal`: delete signal
+        - `callback`: callback function
         """
-        self.check_btn.connect("pressed", click_signal,
-                              {"package":self._package_name,
+        self.check_btn.connect("pressed", callback,
+                              {"action":"toggle",
+                               "package":self._package_name,
                                "connection":self._connection_name})
-        self.edit_btn.connect("clicked", edit_signal,
-                              {"package":self._package_name,
+        self.edit_btn.connect("clicked", callback,
+                              {"action":"edit",
+                               "package":self._package_name,
                                "connection":self._connection_name})
-        self.delete_btn.connect("clicked", delete_signal,
-                              {"package":self._package_name,
+        self.delete_btn.connect("clicked", callback,
+                              {"action":"delete",
+                               "package":self._package_name,
                                "connection":self._connection_name})
 
 gobject.type_register(ConnectionWidget)
+
+class ProfilesHolder(gtk.ScrolledWindow):
+    """Holds Profile List
+    """
+
+    def __init__(self):
+        """init
+        """
+        gtk.ScrolledWindow.__init__(self)
+        self.set_shadow_type(gtk.SHADOW_IN)
+        self.set_policy(gtk.POLICY_NEVER,
+                        gtk.POLICY_AUTOMATIC)
+        self._vbox = gtk.VBox(homogeneous=False,
+                              spacing=10)
+        self.add_with_viewport(self._vbox)
+        self._profiles = {}
+    def set_connection_signal(self, callback):
+        """sets default callback for ConnectionWidget
+        """
+        self._callback = callback
+    def add_profile(self, package, connection, state):
+        """add profiles to vbox
+        """
+        con_wg = ConnectionWidget(package,
+                                  connection,
+                                  state)
+        con_wg.connect_signals(self._callback)
+        self._vbox.pack_start(con_wg, expand=False, fill=False)
+        if not self._profiles.has_key(package):
+            self._profiles[package] = {}
+        self._profiles[package][connection] = {"state":state,
+                                               "widget":con_wg}
+        self._vbox.show_all()
+    def update_profile(self, package, connection, state):
+        """update connection state
+        """
+        c = self._profiles[package][connection]
+        c["state"] = state
+        c["widget"].set_mode(state)
+    def remove_profile(self, package, connection):
+        """remove profile
+        """
+        c = self._profiles[package][connection]
+        self._vbox.remove(c["widget"])
+
+gobject.type_register(ProfilesHolder)
 
 class WifiItemHolder(gtk.ScrolledWindow):
     """holder for wifi connections
