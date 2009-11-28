@@ -157,6 +157,131 @@ class WifiItemHolder(gtk.ScrolledWindow):
 
 gobject.type_register(WifiItemHolder)
 
+class NewWifiConnectionItem(gtk.Table):
+    """new wifi connection
+    """
+    def __init__(self,
+                 device_id,
+                 connection):
+        """init
+        Arguments:
+        - `device_id`: connection device
+        - `connection`: scanRemote callback dict
+                        example: {'remote':'ESSID Name',
+                                  'quality':'60',
+                                  'quality_max':'100'
+                                  'encryption':'wpa-psk',
+                                  ...}
+        """
+        gtk.Table.__init__(self, rows=2, columns=4)
+        self._device_id = device_id
+        self._connection = connection;
+        self._create_ui();
+    def _create_ui(self):
+        """creates UI
+        """
+        frac = float(self._connection['quality'])/ \
+               float(self._connection['quality_max'])
+        per = self._connection['quality']
+        self._quality_bar = gtk.ProgressBar()
+        self._quality_bar.set_fraction(frac)
+        self._quality_bar.set_text(_("%d%%") % int(per))
+
+        self._name_txt = gtk.Label(self._connection['remote'])
+        self._name_txt.set_alignment(0.0 , 0.5)
+
+        self._encrypt_txt = gtk.Label(self._connection['encryption'])
+        self._encrypt_txt.set_alignment(0.0 , 0.5)
+
+        self._connect_btn = gtk.Button(_("Connect"))
+
+        self.attach(self._quality_bar, 0, 1, 0, 2,
+                    gtk.SHRINK, gtk.SHRINK)
+        self.attach(self._name_txt, 1, 2, 0, 1,
+                    gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        self.attach(self._encrypt_txt, 1, 2, 1, 2,
+                    gtk.SHRINK, gtk.SHRINK)
+        self.attach(self._connect_btn, 2, 3, 0, 2,
+                    gtk.SHRINK, gtk.SHRINK)
+
+gobject.type_register(NewWifiConnectionItem)
+
+class NewConnectionWindow(gtk.Window):
+    """show new connections as a list
+    """
+
+    def __init__(self, iface):
+        """init
+        Arguments:
+        - `iface`: NetworkIface
+        """
+        gtk.Window.__init__(self)
+        self._iface = iface
+        self.set_title(_("New Connection"))
+        self._package = "wireless_tools"
+        self._devices = self._iface.devices(self._package).keys()
+        self._create_ui();
+        self._cons = [] #connections
+        self.scan()
+    def _create_ui(self):
+        """creates ui
+        """
+        self._ui = gtk.VBox()
+        self.add(self._ui)
+
+        self._refresh_btn = gtk.Button("")
+        self._refresh_btn.connect("clicked", self.scan)
+        self._ui.add(self._refresh_btn)
+
+        self._list= gtk.VBox()
+        self._ui.add(self._list)
+    def _set_scanning(self, status):
+        """disable/enable refresh btn
+        Arguments:
+        - `status`: if True then disable button
+        """
+        if status:
+            self._refresh_btn.set_label(_("Refreshing..."))
+        else:
+            self._refresh_btn.set_label(_("Refresh"))
+        self._refresh_btn.set_sensitive(not status)
+    def scan(self, widget=None):
+        """scan for wifi networks
+        """
+        self._set_scanning(True)
+        d = self._devices[0] #TODO:more than one device support
+        self._iface.scanRemote(d, self._package,
+                               self._scan_callback)
+    def _scan_callback(self, package, exception, args):
+        """wifi scan callback
+
+        Arguments:
+        - `package`: package name
+        - `exception`: exception
+        - `args`: connection array
+        """
+        self._set_scanning(False)
+        if not exception:
+            self._show_list(args[0])
+        else:
+            print exception
+    def _show_list(self, connections):
+        """show list
+
+        Arguments:
+        - `connections`: connections array
+        """
+        d = self._devices[0]
+        #remove old ones
+        map(self._list.remove, self._cons)
+        self._cons = [NewWifiConnectionItem(d, x)
+                      for x in connections]
+        #add new ones
+        map(self._list.add, self._cons)
+        self.show_all()
+
+gobject.type_register(NewConnectionWindow)
+
 class dummy_data_creator(object):
     """create
     """
@@ -208,10 +333,13 @@ class MainInterface(object):
         self._xml.signal_connect("on_window_main_destroy",
                                 gtk.main_quit)
         self._xml.signal_connect("on_new_clicked",
-                                 self.brand_new)
+                                 self.show_news)
         self._window = self._xml.get_widget("window_main")
         self._holder = self._xml.get_widget("holder")
         self.iface = NetworkIface()
+    def show_news(self, widget):
+        a = NewConnectionWindow(self.iface)
+        a.show()
     def brand_new(self, widget):
         """deneme
 
