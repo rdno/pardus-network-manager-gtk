@@ -356,6 +356,11 @@ class NewConnectionWindow(BaseWindow):
             self._show_list(args[0])
         else:
             print exception
+    def create_new(self, widget, data):
+        NewConnectionEditWindow(self.iface,
+                                "wireless_tools",
+                                self._devices[0],
+                                data["connection"]).show()
     def _show_list(self, connections):
         """show list
 
@@ -378,6 +383,102 @@ class NewConnectionWindow(BaseWindow):
             self._list.pack_start(self._cons[i],
                                   expand=False,
                                   fill=False)
+            self._cons[i].on_connect(self.create_new)
         self._list.show_all()
 
 gobject.type_register(NewConnectionWindow)
+
+class NewConnectionEditWindow(BaseWindow):
+    """New Connection Settings Window
+    """
+
+    def __init__(self, iface,
+                 package, device, data):
+        self.package = package
+        self.data = data
+        self.device = device
+        BaseWindow.__init__(self, iface)
+    def _set_style(self):
+        self.set_title(_("Save Profile"))
+        self.set_default_size(483, 300)
+    def _create_ui(self):
+        dname = self.iface.devices(self.package)[self.device]
+        new_data = {"name":_("New Profile"),
+                    "device_id":self.device,
+                    "device_name":dname,
+                    "net_mode":"auto",
+                    "name_mode":"default"}
+        vbox = gtk.VBox(homogeneous=False,
+                        spacing=5)
+        self.add(vbox)
+
+        self.pf = ProfileFrame(new_data)
+        vbox.pack_start(self.pf, expand=False, fill=False)
+        self.pf.show()
+        if self.package == "wireless_tools":
+            new_data["remote"] = self.data["remote"]
+            _type = self.data["encryption"]
+            self.wf = WirelessFrame(new_data,
+                                    self.iface,
+                                    package=self.package,
+                                    connection="new",
+                                    is_new=True,
+                                    with_list=False,
+                                    select_type=_type)
+            vbox.pack_start(self.wf, expand=False, fill=False)
+            self.wf.show()
+
+        self.expander = gtk.Expander(_("Other Settings"))
+        self.expander.set_expanded(False)
+        vbox2 = gtk.VBox()
+        self.expander.add(vbox2)
+        vbox.pack_start(self.expander, expand=False, fill=False)
+        self.expander.show()
+
+        self.nf = NetworkFrame(new_data)
+        vbox2.pack_start(self.nf, expand=False, fill=False)
+        self.nf.show()
+
+        self.nsf = NameServerFrame(new_data)
+        vbox2.pack_start(self.nsf, expand=False, fill=False)
+        self.nsf.show()
+
+        vbox2.show()
+
+        buttons = gtk.HBox(homogeneous=False,
+                           spacing=6)
+        self.save_btn = gtk.Button(_("Save"))
+        self.save_and_connect_btn = gtk.Button(_("Save & Connect"))
+        self.cancel_btn = gtk.Button(_("Cancel"))
+        buttons.pack_end(self.save_and_connect_btn,
+                         expand=False, fill=False)
+        buttons.pack_end(self.save_btn, expand=False, fill=False)
+        buttons.pack_end(self.cancel_btn, expand=False, fill=False)
+        buttons.show_all()
+        vbox.pack_end(buttons, expand=False, fill=False)
+        vbox.show()
+    def _listen_signals(self):
+        self.save_and_connect_btn.connect("clicked", self.save, True)
+        self.save_btn.connect("clicked", self.save, False)
+        self.cancel_btn.connect("clicked", self.cancel)
+    def cancel(self, widget):
+        self.destroy()
+    def save(self, widget, to_connect):
+        data = self.collect_data()
+        try:
+            self.iface.updateConnection(self.package,
+                                        data["name"],
+                                        data)
+        except Exception, e:
+            print "Exception:", unicode(e)
+        if to_connect:
+            self.iface.connect(self.package, data["name"])
+        self.destroy()
+    def collect_data(self):
+        data = {}
+        self.pf.collect_data(data)
+        self.nf.collect_data(data)
+        self.nsf.collect_data(data)
+        if self.package == "wireless_tools":
+            self.wf.collect_data(data)
+        return data

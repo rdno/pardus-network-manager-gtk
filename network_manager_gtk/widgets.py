@@ -266,6 +266,15 @@ class NewWifiConnectionItem(gtk.Table):
                     gtk.SHRINK, gtk.SHRINK)
         self.attach(gtk.HSeparator(), 0, 3, 2, 3,
                     gtk.FILL, gtk.SHRINK)
+    def on_connect(self, func):
+        """on connect button clicked
+
+        Arguments:
+        - `func`:
+        """
+        self._connect_btn.connect("clicked",
+                                  func,
+                                  {"connection":self._connection})
 
 gobject.type_register(NewWifiConnectionItem)
 
@@ -562,14 +571,19 @@ class WirelessFrame(EditWindowFrame):
 
     def __init__(self, data, iface,
                  package=None,connection=None,
-                 with_list=True, is_new=False):
+                 with_list=True, is_new=False,
+                 select_type="none"):
         self.iface = iface
         self.package = package
         self.connection = connection
         self.with_list = with_list
         self.is_new = is_new
+        self.select_type = select_type
         EditWindowFrame.__init__(self, data)
     def _create_ui(self):
+        self.set_label(_("<b>Wireless</b>"))
+        self.get_label_widget().set_use_markup(True)
+
         self._essid_lb = gtk.Label(_("ESSID:"))
         self._essid_lb.set_alignment(1.0, 0.5)
 
@@ -674,6 +688,8 @@ class WirelessFrame(EditWindowFrame):
                 else:
                     self._security_types.set_active(0)
                     self._show_password(False)
+            else:
+                self._set_current_security_type(self.select_type)
     def _on_hide_pass(self, widget):
         self._pass_txt.set_visibility(not widget.get_active())
     def _on_sec_changed(self, widget):

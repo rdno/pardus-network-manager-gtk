@@ -1,4 +1,4 @@
-Network Manager GTK is port of Pardus network-manager.
+Network Manager GTK is port of Pardus's network-manager.
 It uses same backend of qt version.
 
 To use:
@@ -14,9 +14,10 @@ and start program
 It can
     * activate/deactivate profiles
     * show and edit settings
+    * create profile
 
 TODO
-   * New Connection Interface
-   * Icon Support
-   * Tray Icon
-   ? libnotify support
+    * error handling like no profile name
+    * Icon Support
+    * Tray Icon
+    * libnotify support
