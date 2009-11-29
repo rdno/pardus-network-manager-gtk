@@ -33,7 +33,40 @@ from network_manager_gtk.translation import _
 
 from network_manager_gtk.widgets import ProfilesHolder
 
-class MainWindow(gtk.Window):
+from network_manager_gtk.widgets import ProfileFrame
+from network_manager_gtk.widgets import NetworkFrame
+from network_manager_gtk.widgets import NameServerFrame
+from network_manager_gtk.widgets import WirelessFrame
+
+class BaseWindow(gtk.Window):
+    """BaseWindow for network_manager_gtk
+    """
+
+    def __init__(self, iface):
+        """init
+
+        Arguments:
+        - `iface`:
+        """
+        gtk.Window.__init__(self)
+        self.iface = iface
+        self._set_style()
+        self._create_ui()
+        self._listen_signals()
+    def _set_style(self):
+        """sets title and default size etc.
+        """
+        pass
+    def _create_ui(self):
+        """creates ui elements
+        """
+        pass
+    def _listen_signals(self):
+        """listens signals
+        """
+        pass
+
+class MainWindow(BaseWindow):
     """Main Window
     profile list
     """
@@ -44,21 +77,13 @@ class MainWindow(gtk.Window):
         Arguments:
         - `iface`: backend.NetworkIface
         """
-        gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
-        self.iface = iface
+        BaseWindow.__init__(self, iface)
         self.get_state = lambda p,c:self.iface.info(p,c)[u"state"]
-        self._set_style()
-        self._create_ui()
-        self._listen_signals()
         self._get_profiles()
     def _set_style(self):
-        """sets title and defualt size
-        """
-        self.set_title = _("Network Manager")
-        self.set_default_size(400, 300)
+        self.set_title(_("Network Manager"))
+        self.set_default_size(483, 300)
     def _create_ui(self):
-        """creates ui elements
-        """
         self._vbox = gtk.VBox()
         self.add(self._vbox)
 
@@ -82,7 +107,9 @@ class MainWindow(gtk.Window):
             self.iface.toggle(data["package"],
                               data["connection"])
         elif action == "edit":
-            pass
+            EditWindow(self.iface,
+                       data["package"],
+                       data["connection"]).show()
         else:
             m = _("Do you wanna delete the connection  '%s' ?") % \
                 data['connection']
@@ -100,8 +127,12 @@ class MainWindow(gtk.Window):
     def _listen_signals(self):
         """listen some signals
         """
+        self._new_btn.connect("clicked", self.new_profile)
         self.connect("destroy", gtk.main_quit)
         self.iface.listen(self._listen_comar)
+    def new_profile(self, widget):
+        EditWindow(self.iface,"wireless_tools", "new",
+                   device_id=self.iface.devices("wireless_tools").keys()[0]).show()
     def _listen_comar(self, package, signal, args):
         """comar listener
 
@@ -137,3 +168,107 @@ class MainWindow(gtk.Window):
                 self._holder.add_profile(package,
                                          connection,
                                          state)
+
+class EditWindow(BaseWindow):
+    """Edit Window
+    """
+
+    def __init__(self, iface, package, connection,
+                 device_id=None):
+        """init
+
+        Arguments:
+        - `iface`: backend.NetworkIface
+        - `package`: package name
+        - `connection`: connection name (can be 'new')
+        """
+        self._package = package
+        self._connection = connection
+        self._device_id = device_id
+        self.is_wireless = False
+        if self._package == "wireless_tools":
+            self.is_wireless = True
+        BaseWindow.__init__(self, iface)
+    def _set_style(self):
+        """sets title and default size
+        """
+        self.set_title(_("Edit Connection"))
+        self.set_modal(True)
+        if self.is_wireless:
+            self.set_default_size(644, 400)
+        else:
+            self.set_default_size(483, 300)
+    def _create_ui(self):
+        self.data = ""
+        self._is_new = self._connection == "new"
+        if not self._is_new:
+            self.data = self.iface.info(self._package,
+                                        self._connection)
+            self.is_up = self.data["state"][0:2] == "up"
+        else:
+            dname = self.iface.devices(self._package)[self._device_id]
+            self.data = {"name":"",
+                         "device_id":self._device_id,
+                         "device_name":dname,
+                         "net_mode":"auto",
+                         "name_mode":"default"}
+            self.is_up = False
+        vbox = gtk.VBox(homogeneous=False,
+                        spacing=6)
+        self.add(vbox)
+
+        self.pf = ProfileFrame(self.data)
+        vbox.pack_start(self.pf, expand=False, fill=False)
+
+        if self.is_wireless:
+            self.wf = WirelessFrame(self.data, self.iface,
+                                    package=self._package,
+                                    connection=self._connection,
+                                    with_list=True,
+                                    is_new=self._is_new)
+            vbox.pack_start(self.wf, expand=True, fill=True)
+            self.wf.show()
+
+        self.nf = NetworkFrame(self.data)
+        vbox.pack_start(self.nf, expand=False, fill=False)
+
+        self.nsf = NameServerFrame(self.data)
+        vbox.pack_start(self.nsf, expand=False, fill=False)
+        self.nsf.show()
+
+        buttons = gtk.HBox(homogeneous=False,
+                           spacing=6)
+        self.apply_btn = gtk.Button(_("Apply"))
+        self.cancel_btn = gtk.Button(_("Cancel"))
+        buttons.pack_end(self.apply_btn, expand=False, fill=False)
+        buttons.pack_end(self.cancel_btn, expand=False, fill=False)
+        buttons.show_all()
+        vbox.pack_end(buttons, expand=False, fill=False)
+        vbox.show()
+    def _listen_signals(self):
+        self.apply_btn.connect("clicked", self.apply)
+        self.cancel_btn.connect("clicked", self.cancel)
+    def cancel(self, widget):
+        self.destroy()
+    def apply(self, widget):
+        data = self.collect_data()
+        try:
+            self.iface.updateConnection(self._package,
+                                        data["name"],
+                                        data)
+        except Exception, e:
+            print "Exception:", unicode(e)
+        if not self._is_new:
+            if not self.data["name"] == data["name"]:
+                self.iface.deleteConnection(self._package,
+                                            self.data["name"])
+            if self.is_up:
+                self.iface.connect(self._package, data["name"])
+        self.destroy()
+    def collect_data(self):
+        data = {}
+        self.pf.collect_data(data)
+        self.nf.collect_data(data)
+        self.nsf.collect_data(data)
+        if self.is_wireless: self.wf.collect_data(data)
+        return data

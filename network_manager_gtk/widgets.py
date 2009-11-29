@@ -204,7 +204,8 @@ class WifiItemHolder(gtk.ScrolledWindow):
             self.add_with_viewport(self.scan_lb)
             self.show_all()
         else:
-            self.remove(self.get_child())
+            if self.get_child():
+                self.remove(self.get_child())
 
 gobject.type_register(WifiItemHolder)
 
@@ -416,14 +417,36 @@ class MainInterface(object):
         """
         return self._holder
 
-# --- Edit Window Sections (in ui: frame)
 
-class EditSection(object):
-    def __init__(self, parent):
-        super(EditSection, self).__init__()
-        self.get = parent.get
-        self.signal_connect = parent._xml.signal_connect
-        self.parent = parent
+class EditWindowFrame(gtk.Frame):
+    """Base EditWindowFrame
+    """
+
+    def __init__(self, data):
+        """init
+
+        Arguments:
+        - `data`: iface.info
+        """
+        gtk.Frame.__init__(self)
+        self._create_ui()
+        self._listen_signals()
+        self._insert_data(data)
+    def _create_ui(self):
+        """creates ui elements
+        """
+        pass
+    def _listen_signals(self):
+        """listens some signals
+        """
+        pass
+    def _insert_data(self, data):
+        """inserts data
+
+        Arguments:
+        - `data`:data to insert
+        """
+        pass
     def if_available_set(self, data, key, method):
         """if DATA dictionary has KEY execute METHOD with
         arg:data[key]"""
@@ -431,358 +454,428 @@ class EditSection(object):
             method(data[key])
     def get_text_of(self, name):
         """gets text from widget in unicode"""
-        return unicode(self.get(name).get_text())
+        return unicode(name.get_text())
     def collect_data(self, data):
         """collect data from ui and append datas to
         given(data) dictionary"""
         pass
+    def _rb_callback(self, widget, data):
+        """RadioButton callback
 
-class ProfileSection(EditSection):
-    def __init__(self, parent):
-        super(ProfileSection, self).__init__(parent)
-    def insert_data_and_show(self, data):
+        Arguments:
+        - `widget`: widget
+        - `data`: callback data
+        """
+        #if custom selected enable them
+        for i in data["enable"]:
+            i.set_sensitive(data["is_custom"])
+        #if custom selected disable them
+        for j in data["disable"]:
+            j.set_sensitive(not data["is_custom"])
+    def set_rb_signal(self, rb_list, custom_rb,
+                      on_custom_enable,
+                      on_custom_disable = []):
+        """Sets RadioButton signals
+        and adjust behaviour
+
+        Arguments:
+        - `rb_list`: RadioButton list
+        - `custom_rb`: RadioButton labeled Custom
+        - `on_custom_enable`: List of widgets to enable
+                              if custom selected
+        - `on_custom_disable`: List of widgets to disable
+                               if custom selected
+        """
+        for i in rb_list:
+            i.connect("clicked", self._rb_callback,
+                      {"is_custom":i == custom_rb,
+                       "enable":on_custom_enable,
+                       "disable":on_custom_disable})
+class ProfileFrame(EditWindowFrame):
+    """Edit Window > Profile Frame
+    """
+    def __init__(self, data):
+        EditWindowFrame.__init__(self, data)
+    def _create_ui(self):
+        self.set_label(_("<b>Profile</b>"))
+        self.get_label_widget().set_use_markup(True)
+
+        profile_lb = gtk.Label(_("Profile Name:"))
+        self._profile_name = gtk.Entry()
+
+        self._device_name_lb = gtk.Label("")
+        self._device_name_lb.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
+
+        #structure
+        hbox = gtk.HBox(homogeneous=False,
+                        spacing=5)
+        self.add(hbox)
+        hbox.pack_start(profile_lb, expand=False)
+        hbox.pack_start(self._profile_name)
+        hbox.pack_start(self._device_name_lb)
+        self.show_all()
+    def _insert_data(self, data):
         self.if_available_set(data, "name",
-                              self.get("profilename").set_text)
+                              self._profile_name.set_text)
         self.if_available_set(data, "device_name",
-                              self.get("device_name_label").set_text)
+                              self._device_name_lb.set_text)
         self.device_id = data["device_id"]
         #TODO:more than one device support
     def collect_data(self, data):
-        super(ProfileSection, self).collect_data(data)
-        data["name"] = self.get_text_of("profilename")
+        data["name"] = self.get_text_of(self._profile_name)
         data["device_id"] = unicode(self.device_id)
 
-class NetworkSettingsSection(EditSection):
-    def __init__(self, parent):
-        super(NetworkSettingsSection, self).__init__(parent)
-    def _on_type_changed(self, widget):
-        if widget is self.get("dhcp_rb"):
-            self.set_manual_network(False)
-        else:
-            self.set_manual_network(True)
-    def set_manual_network(self, state):
-        self.get("address").set_sensitive(state)
-        self.get("address_lb").set_sensitive(state)
-        self.get("networkmask").set_sensitive(state)
-        self.get("networkmask_lb").set_sensitive(state)
-        self.get("gateway").set_sensitive(state)
-        self.get("gateway_lb").set_sensitive(state)
-        # custom things
-        self.get("custom_gateway").set_sensitive(not state)
-        self.get("custom_address").set_sensitive(not state)
-        if not state:
-            self._on_custom_address(self.get("custom_address"))
-            self._on_custom_gateway(self.get("custom_gateway"))
-    def _on_custom_address(self, widget):
-        state = widget.get_active()
-        self.get("address").set_sensitive(state)
-        self.get("address_lb").set_sensitive(state)
-        self.get("networkmask").set_sensitive(state)
-        self.get("networkmask_lb").set_sensitive(state)
-    def _on_custom_gateway(self, widget):
-        state = widget.get_active()
-        self.get("gateway").set_sensitive(state)
-        self.get("gateway_lb").set_sensitive(state)
-    def listen_signals(self):
-        self.signal_connect("on_dhcp_rb_clicked",
-                            self._on_type_changed)
-        self.signal_connect("on_manual_rb_clicked",
-                             self._on_type_changed)
-        self.signal_connect("on_custom_gateway_toggled",
-                            self._on_custom_gateway)
-        self.signal_connect("on_custom_address_toggled",
-                            self._on_custom_address)
-    def insert_data_and_show(self, data):
+class NetworkFrame(EditWindowFrame):
+    """Edit Window > Network Settings Frame
+    """
+
+    def __init__(self, data):
+        EditWindowFrame.__init__(self, data)
+    def _create_ui(self):
+        self.set_label(_("<b>Network Settings</b>"))
+        self.get_label_widget().set_use_markup(True)
+
+        self._dhcp_rb = gtk.RadioButton(label=_("Use DHCP"))
+        self._custom_rb = gtk.RadioButton(group=self._dhcp_rb,
+                                          label=_("Use Manual Settings")
+                                          )
+        self._address_lb = gtk.Label(_("Address:"))
+        self._address_lb.set_alignment(1.0, 0.5)
+        self._mask_lb = gtk.Label(_("Network Mask:"))
+        self._mask_lb.set_alignment(1.0, 0.5)
+        self._gateway_lb = gtk.Label(_("Default Gateway:"))
+        self._gateway_lb.set_alignment(1.0, 0.5)
+
+        self._address_txt = gtk.Entry()
+        self._mask_txt = gtk.Entry()
+        self._gateway_txt = gtk.Entry()
+
+        custom = _("Custom")
+        self._custom_add_cb = gtk.CheckButton(label=custom)
+        self._custom_gate_cb = gtk.CheckButton(label=custom)
+
+        #structure
+        table = gtk.Table(rows=4, columns=4)
+        self.add(table)
+
+        table.attach(self._dhcp_rb, 0, 1 , 0, 1,
+                     gtk.FILL, gtk.SHRINK)
+        table.attach(self._custom_rb, 0, 1 , 1, 2,
+                     gtk.FILL, gtk.SHRINK)
+        table.attach(self._address_lb, 1, 2 , 1, 2,
+                     gtk.FILL, gtk.SHRINK)
+        table.attach(self._mask_lb, 1, 2 , 2, 3,
+                     gtk.FILL, gtk.SHRINK)
+        table.attach(self._gateway_lb, 1, 2 , 3, 4,
+                     gtk.FILL, gtk.SHRINK)
+        table.attach(self._address_txt, 2, 3 , 1, 2,
+                     gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        table.attach(self._mask_txt, 2, 3, 2, 3,
+                     gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        table.attach(self._gateway_txt, 2, 3 , 3, 4,
+                     gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        table.attach(self._custom_add_cb, 3, 4 , 1, 2,
+                     gtk.FILL, gtk.SHRINK)
+        table.attach(self._custom_gate_cb, 3, 4 , 3, 4,
+                     gtk.FILL, gtk.SHRINK)
+        self.show_all()
+    def _listen_signals(self):
+        self._rb_list = [self._dhcp_rb, self._custom_rb]
+        self._on_custom_enable = [self._address_lb,
+                                  self._address_txt,
+                                  self._mask_lb,
+                                  self._mask_txt,
+                                  self._gateway_lb,
+                                  self._gateway_txt]
+        self._on_custom_disable = [self._custom_add_cb,
+                                   self._custom_gate_cb]
+        self.set_rb_signal(self._rb_list,
+                           self._custom_rb,
+                           self._on_custom_enable,
+                           self._on_custom_disable)
+        self._custom_gate_cb.connect("clicked", self._on_custom)
+        self._custom_add_cb.connect("clicked", self._on_custom)
+    def _insert_data(self, data):
         if data.has_key("net_mode"):
-            self.listen_signals()
             if data["net_mode"] == "auto":
-                self.get("dhcp_rb").set_active(True)
-                self.set_manual_network(False)
+                self._dhcp_rb.set_active(True)
+                self._rb_callback(self._dhcp_rb,
+                                  {"is_custom":False,
+                                   "enable":self._on_custom_enable,
+                                   "disable":self._on_custom_disable})
                 if self.is_custom(data, "net_gateway"):
-                    self.get("custom_gateway").set_active(True)
+                    self._custom_gate_cb.set_active(True)
                 if self.is_custom(data, "net_address"):
-                    self.get("custom_address").set_active(True)
+                    self._custom_add_cb.set_active(True)
             else:
-                self.get("manual_rb").set_active(False)
-                self.set_manual_network(True)
+                self._custom_rb.set_active(False)
 
         self.if_available_set(data, "net_address",
-                              self.get("address").set_text)
+                              self._address_txt.set_text)
         self.if_available_set(data, "net_mask",
-                              self.get("networkmask").set_text)
+                              self._mask_txt.set_text)
         self.if_available_set(data, "net_gateway",
-                              self.get("gateway").set_text)
+                              self._gateway_txt.set_text)
+    def _on_custom(self, widget):
+        if widget is self._custom_add_cb:
+            widgets = self._on_custom_enable[0:4]
+        else:
+            widgets = self._on_custom_enable[4:]
+        for x in widgets:
+            x.set_sensitive(widget.get_active())
+    def _rb_callback(self, widget, data):
+        EditWindowFrame._rb_callback(self, widget, data)
+        if not data["is_custom"]:
+            if self._custom_add_cb.get_active():
+                for x in data["enable"][0:4]:
+                    x.set_sensitive(True)
+            if self._custom_gate_cb.get_active():
+                for x in data["enable"][4:]:
+                    x.set_sensitive(True)
     def is_custom(self, data, key):
         if data.has_key(key):
             if data[key] != "":
                 return True
         return False
     def collect_data(self, data):
-        super(NetworkSettingsSection, self).collect_data(data)
         data["net_mode"] = u"auto"
         data["net_address"] = u""
         data["net_mask"] = u""
         data["net_gateway"] = u""
-        if self.get("manual_rb").get_active():
+        if self._custom_rb.get_active():
             data["net_mode"] = u"manual"
-        if self.get("address").state == gtk.STATE_NORMAL:
-            data["net_address"] = self.get_text_of("address")
-            data["net_mask"] = self.get_text_of("networkmask")
-        if self.get("gateway").state == gtk.STATE_NORMAL:
-            data["net_gateway"] = self.get_text_of("gateway")
+        if self._address_txt.state == gtk.STATE_NORMAL:
+            data["net_address"] = self.get_text_of(self._address_txt)
+            data["net_mask"] = self.get_text_of(self._mask_txt)
+        if self._gateway_txt.state == gtk.STATE_NORMAL:
+            data["net_gateway"] = self.get_text_of(self._gateway_txt)
 
-class NameServerSection(EditSection):
-    def __init__(self, parent):
-        super(NameServerSection, self).__init__(parent)
-    def set_custom_name(self, state):
-        self.get("ns_custom_text").set_sensitive(state)
-    def _on_type_changed(self, widget):
-        if widget is self.get("ns_custom_rb"):
-            self.set_custom_name(True)
-        else:
-            self.set_custom_name(False)
-    def listen_signals(self):
-        self.signal_connect("on_ns_default_rb_clicked",
-                            self._on_type_changed)
-        self.signal_connect("on_ns_custom_rb_clicked",
-                            self._on_type_changed)
-        self.signal_connect("on_ns_auto_rb_clicked",
-                            self._on_type_changed)
-    def insert_data_and_show(self, data):
-        self.listen_signals()
+class NameServerFrame(EditWindowFrame):
+    """Edit Window > Name Server Frame
+    """
+
+    def __init__(self, data):
+        EditWindowFrame.__init__(self, data)
+    def _create_ui(self):
+        self.set_label(_("<b>Name Servers</b>"))
+        self.get_label_widget().set_use_markup(True)
+
+        self._default_rb = gtk.RadioButton(label=_("Default"))
+
+        self._auto_rb = gtk.RadioButton(group=self._default_rb,
+                                        label=_("Automatic"))
+
+        self._custom_rb = gtk.RadioButton(group=self._default_rb,
+                                          label=_("Custom"))
+        self._custom_txt = gtk.Entry()
+
+        #structure
+        hbox = gtk.HBox(homogeneous=False,
+                        spacing=5)
+        self.add(hbox)
+        hbox.pack_start(self._default_rb, expand=False)
+        hbox.pack_start(self._auto_rb, expand=False)
+        hbox.pack_start(self._custom_rb, expand=False)
+        hbox.pack_start(self._custom_txt, expand=True)
+        self.show_all()
+    def _listen_signals(self):
+        self.set_rb_signal(rb_list=[self._default_rb,
+                            self._auto_rb,
+                            self._custom_rb],
+                           custom_rb=self._custom_rb,
+                           on_custom_enable=[self._custom_txt])
+    def _insert_data(self, data):
         if data.has_key("name_mode"):
+            self._custom_txt.set_sensitive(False)
             if data["name_mode"] == "default":
-                self.get("ns_default_rb").set_active(True)
-                self.set_custom_name(False)
+                self._default_rb.set_active(True)
             elif data["name_mode"] == "auto":
-                self.get("ns_auto_rb").set_active(True)
-                self.set_custom_name(False)
+                self._auto_rb.set_active(True)
             elif data["name_mode"] == "custom":
-                self.get("ns_custom_rb").set_active(True)
-                self.set_custom_name(True)
+                self._custom_rb.set_active(True)
+                self._custom_txt.set_sensitive(True)
         self.if_available_set(data, "name_server",
-                              self.get("ns_custom_text").set_text)
+                              self._custom_txt.set_text)
     def collect_data(self, data):
-        super(NameServerSection, self).collect_data(data)
         data["name_mode"] = u"default"
         data["name_server"] = u""
-        if self.get("ns_auto_rb").get_active():
+        if self._auto_rb.get_active():
             data["name_mode"] = u"auto"
-        if self.get("ns_custom_rb").get_active():
+        if self._custom_rb.get_active():
             data["name_mode"] = u"custom"
-            data["name_server"] = self.get_text_of("ns_custom_text")
+            data["name_server"] = self.get_text_of(self._custom_txt)
 
-class WirelessSection(EditSection):
-    def __init__(self, parent):
-        super(WirelessSection, self).__init__(parent)
-        self.iface = parent.iface
-        self.package = parent._package
-        self.connection = parent._connection
-        self.is_new = parent.is_new
-    # --- Password related
-    def show_password(self, state):
-        if not state:
-            self.get("hidepass_cb").hide()
-            self.get("pass_text").hide()
-            self.get("pass_lb").hide()
-        else:
-            self.get("hidepass_cb").show()
-            self.get("pass_text").show()
-            self.get("pass_lb").show()
-    def hide_password(self, widget):
-        visibility = not widget.get_active()
-        self.get("pass_text").set_visibility(visibility)
-    # end Password related
-    def scan(self, widget=None):
-        self.get("scan_btn").hide()
-        self.wifiitems.set_scanning(True)
-        self.iface.scanRemote(self.device , self.package, self.wifilist)
-    def security_types_changed(self, widget):
-        index = widget.get_active()
-        if index == 0:
-            self.show_password(False)
-        else:
-            self.show_password(True)
-    def listen_signals(self):
-        self.signal_connect("on_security_types_changed",
-                            self.security_types_changed)
-        self.signal_connect("on_hidepass_cb_toggled",
-                            self.hide_password)
-    def set_security_types_style(self):
-        ##Security Type ComboBox
-        model = gtk.ListStore(str)
-        security_types = self.get("security_types")
-        security_types.set_model(model)
-        cell = gtk.CellRendererText()
-        security_types.pack_start(cell)
-        security_types.add_attribute(cell,'text',0)
-    def prepare_security_types(self, authType):
-        self.set_security_types_style()
-        noauth = _("No Authentication")
-        self._authMethods = [("none", noauth)]
-        append_to_types = self.get("security_types").append_text
-        append_to_types(noauth)
-        self.get("security_types").set_active(0)
-        index = 1
-        self.with_password = False
+class WirelessFrame(EditWindowFrame):
+    """Edit Settings Window > WirelessFrame
+    """
+
+    def __init__(self, data, iface,
+                 package=None,connection=None,
+                 with_list=True, is_new=False):
+        self.iface = iface
+        self.package = package
+        self.connection = connection
+        self.with_list = with_list
+        self.is_new = is_new
+        EditWindowFrame.__init__(self, data)
+    def _create_ui(self):
+        self._essid_lb = gtk.Label(_("ESSID:"))
+        self._essid_lb.set_alignment(1.0, 0.5)
+
+        self._essid_txt = gtk.Entry()
+
+        self._security_lb = gtk.Label(_("Security Type:"))
+        self._security_lb.set_alignment(1.0, 0.5)
+
+        self._security_types = gtk.combo_box_new_text()
+        self._authMethods = [{"name":"none",
+                              "desc":_("No Authentication")}]
+        self._security_types.append_text(self._authMethods[0]["desc"])
         for name, desc in self.iface.authMethods(self.package):
-            append_to_types(desc)
-            self._authMethods.append((name, desc))
-            if name == authType:
-                self.get("security_types").set_active(index)
-                self.with_password = True
-            index += 1
-    def on_wifi_clicked(self, widget, callback_data):
-        data = callback_data["get_connection"]()
-        self.get("essid_text").set_text(data["remote"])
-        for index, method in enumerate(self._authMethods):
-            if method[0] == data["encryption"]:
-                self.get("security_types").set_active(index)
-    def wifilist(self, package, exception, args):
-        self.get("scan_btn").show()
-        self.signal_connect("on_scan_btn_clicked",
-                            self.scan)
-        if not exception:
-            self.wifiitems.getConnections(args[0])
-            self.wifiitems.listen_change(self.on_wifi_clicked)
+            self._authMethods.append({"name":name, "desc":desc})
+            self._security_types.append_text(desc)
+        self._set_current_security_type(_("No Authentication"))
+        self._pass_lb = gtk.Label(_("Password:"))
+        self._pass_lb.set_alignment(1.0, 0.5)
+
+        self._pass_txt = gtk.Entry()
+        self._pass_txt.set_visibility(False)
+
+        self._hide_cb = gtk.CheckButton(_("Hide Password"))
+        self._hide_cb.set_active(True)
+
+        if self.with_list:
+            table = gtk.Table(rows=4, columns=3)
+
+            self._wifiholder = WifiItemHolder()
+            self._scan_btn = gtk.Button("Scan")
+
+            table.attach(self._essid_lb, 1, 2, 0, 1,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._essid_txt, 2, 3, 0, 1,
+                         gtk.EXPAND | gtk.FILL, gtk.SHRINK)
+            table.attach(self._security_lb, 1, 2, 1, 2,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._security_types, 2, 3, 1, 2,
+                         gtk.EXPAND | gtk.FILL, gtk.SHRINK)
+            table.attach(self._pass_lb, 1, 2, 2, 3,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._pass_txt, 2, 3, 2, 3,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._hide_cb, 1, 3, 3, 4,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._wifiholder, 0, 1, 0, 3,
+                         gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL)
+            table.attach(self._scan_btn, 0, 1, 3, 4,
+                         gtk.FILL, gtk.SHRINK)
+            self._wifiholder.show()
         else:
-            print exception
-    def insert_data_and_show(self, data, caps):
-        self.listen_signals()
+            table = gtk.Table(rows=4, columns=2)
+
+            table.attach(self._essid_lb, 0, 1, 0, 1,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._essid_txt, 1, 2, 0, 1,
+                         gtk.EXPAND | gtk.FILL, gtk.SHRINK)
+            table.attach(self._security_lb, 0, 1, 1, 2,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._security_types, 1, 2, 1, 2,
+                         gtk.EXPAND | gtk.FILL, gtk.SHRINK)
+            table.attach(self._pass_lb, 0, 1, 2, 3,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._pass_txt, 1, 2, 2, 3,
+                         gtk.FILL, gtk.SHRINK)
+            table.attach(self._hide_cb, 0, 2, 3, 4,
+                         gtk.FILL, gtk.SHRINK)
+        self.add(table)
+        table.show()
+        self._essid_lb.show()
+        self._essid_txt.show()
+        self._security_lb.show()
+        self._security_types.show()
+    def _listen_signals(self):
+        self._hide_cb.connect("clicked", self._on_hide_pass)
+        self._security_types.connect("changed", self._on_sec_changed)
+    def _insert_data(self, data):
         self.device = data["device_id"]
         self.if_available_set(data, "remote",
-                              self.get("essid_text").set_text)
+                              self._essid_txt.set_text)
+        caps = self.iface.capabilities(self.package)
         modes = caps["modes"].split(",")
-        if ("auth" in modes) and (not self.is_new):
-            authType = self.iface.authType(self.package,
-                                           self.connection)
-            self.prepare_security_types(authType)
-            self.get("hidepass_cb").set_active(True)
-            if self.with_password:
+        if self.with_list:
+            self.scan()
+        if "auth" in modes:
+            if not self.is_new:
                 authType = self.iface.authType(self.package,
                                                self.connection)
-                authInfo = self.iface.authInfo(self.package,
+                self._set_current_security_type(authType)
+                self._show_password(False)
+                if (not authType == "none") & (not authType == ""):
+                    info = self.iface.authInfo(self.package,
                                                self.connection)
-                authParams = self.iface.authParameters(self.package,
+                    params = self.iface.authParameters(self.package,
                                                        authType)
-                if len(authParams) == 1:
-                    password = authInfo.values()[0]
-                    self.get("pass_text").set_text(password)
-                elif len(authParams) > 1:
-                    print "\nTODO:Dynamic WEP support"
-            self.show_password(self.with_password)
-        if self.is_new:
-            pass
-        self.wifiitems = WifiItemHolder()
-        self.get("wireless_table").attach(self.wifiitems,
-                                          0, 1, 0, 3,
-                                          gtk.EXPAND|gtk.FILL,
-                                          gtk.EXPAND|gtk.FILL)
-        self.scan()
+                    if len(params) == 1:
+                        password = info.values()[0]
+                        self._pass_txt.set_text(password)
+                    elif len(params) > 1:
+                        print "\nTODO:Dynamic WEP Support"
+                    self._show_password(True)
+                else:
+                    self._security_types.set_active(0)
+                    self._show_password(False)
+    def _on_hide_pass(self, widget):
+        self._pass_txt.set_visibility(not widget.get_active())
+    def _on_sec_changed(self, widget):
+        self._show_password(not widget.get_active() == 0)
+    def _show_password(self, state):
+        if not state:
+            self._hide_cb.hide()
+            self._pass_txt.hide()
+            self._pass_lb.hide()
+        else:
+            self._hide_cb.show()
+            self._pass_txt.show()
+            self._pass_lb.show()
+    def _get_current_security_type(self):
+        w = self._security_types
+        current =  w.get_model()[w.get_active()][0]
+        for x in self._authMethods:
+            if x["desc"] == current:
+                return x["name"]
+    def _set_current_security_type(self, name):
+        for i, x in enumerate(self._authMethods):
+            if x["name"] == name:
+                self._security_types.set_active(i)
+                break
+    def scan(self, widget=None):
+        self._scan_btn.hide()
+        self._wifiholder.set_scanning(True)
+        self.iface.scanRemote(self.device ,
+                              self.package,
+                              self.listwifi)
+    def listwifi(self, package, exception, args):
+        self._scan_btn.show()
+        self._scan_btn.connect("clicked",
+                               self.scan)
+        if not exception:
+            self._wifiholder.getConnections(args[0])
+            self._wifiholder.listen_change(self.on_wifi_clicked)
+        else:
+            print exception
+    def on_wifi_clicked(self, widget, callback_data):
+        data = callback_data["get_connection"]()
+        self._essid_txt.set_text(data["remote"])
+        self._set_current_security_type(data["encryption"])
     def collect_data(self, data):
-        super(WirelessSection, self).collect_data(data)
-        data["remote"] = self.get_text_of("essid_text")
+        data["remote"] = self.get_text_of(self._essid_txt)
         data["apmac"] = u"" #i think it is Access Point MAC
-
         #Security
-        data["auth"] = unicode(self._authMethods[
-                self.get("security_types").get_active()][0])
+        data["auth"] = unicode(self._get_current_security_type())
         if data["auth"] != u"none":
             params = self.iface.authParameters("wireless_tools",
                                                data["auth"])
             if len(params) == 1:
                 key = "auth_%s" % params[0][0]
-                data[key] = self.get_text_of("pass_text")
+                data[key] = self.get_text_of(self._pass_txt)
             else:
                 print "TODO:Dynamic WEP Support"
-
-
-# end Edit Window Sections
-
-class EditInterface(object):
-    """Imports edit window glade
-    """
-
-    def __init__(self,
-                 package,
-                 connection="",
-                 is_new=False,
-                 new_data={}):
-        """init
-        Arguments:
-        - `package`:
-        - `connection`:
-        """
-        bind_glade_domain()
-        self.iface = NetworkIface()
-        self._package = package
-        self._connection = connection
-        self._xml = glade.XML("ui/edit.glade")
-        self.get  = self._xml.get_widget
-        self.listen_signals()
-        self.is_new = is_new
-        self.new_data = new_data
-        self.insertData()
-    def apply(self, widget):
-        data = self.collect_data()
-        try:
-            self.iface.updateConnection(self._package,
-                                        data["name"],
-                                        data)
-        except Exception, e:
-            print "Exception:", unicode(e)
-
-        if not self.name == data["name"]:
-            self.iface.deleteConnection(self._package, self.name)
-        if self.is_up:
-            self.iface.connect(self._package, self.name)
-        self.getWindow().destroy()
-    def cancel(self, widget):
-        self.getWindow().destroy()
-    def listen_signals(self):
-        self._xml.signal_connect("apply_btn_clicked",
-                                 self.apply)
-        self._xml.signal_connect("cancel_btn_clicked",
-                                 self.cancel)
-    def insertData(self):
-        """show preferences
-        """
-        if not self.is_new:
-            data = self.iface.info(self._package,
-                                   self._connection)
-        else:
-            data = self.new_data
-        self.name = data["name"]
-        self.is_up = False
-        if data.has_key("state"):
-            if data["state"][0:2] == "up":
-                self.is_up = True
-        #Profile Frame
-        self.profile_frame = ProfileSection(self)
-        self.profile_frame.insert_data_and_show(data)
-        #Network Settings Frame
-        self.network_frame = NetworkSettingsSection(self)
-        self.network_frame.insert_data_and_show(data)
-        #Name Servers Frame
-        self.name_frame = NameServerSection(self)
-        self.name_frame.insert_data_and_show(data)
-        # Wireless Frame
-        if self._package == "wireless_tools":
-            caps = self.iface.capabilities(self._package)
-            self.wireless_frame = WirelessSection(self)
-            self.wireless_frame.insert_data_and_show(data, caps)
-        else:
-            self.get("wireless_frame").hide()
-
-    def collect_data(self):
-        data = {}
-        self.profile_frame.collect_data(data)
-        self.network_frame.collect_data(data)
-        self.name_frame.collect_data(data)
-        if self._package == "wireless_tools":
-            self.wireless_frame.collect_data(data)
-        return data
-    def getWindow(self):
-        """returns window
-        """
-        return self.get("window_edit")
