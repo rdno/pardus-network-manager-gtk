@@ -214,7 +214,8 @@ class NewWifiConnectionItem(gtk.Table):
     """
     def __init__(self,
                  device_id,
-                 connection):
+                 connection,
+                 auth_type):
         """init
         Arguments:
         - `device_id`: connection device
@@ -224,10 +225,12 @@ class NewWifiConnectionItem(gtk.Table):
                                   'quality_max':'100'
                                   'encryption':'wpa-psk',
                                   ...}
+        - `auth_type`: wpa-psk -> WPA Ortak Anahtar
         """
-        gtk.Table.__init__(self, rows=2, columns=4)
+        gtk.Table.__init__(self, rows=3, columns=4)
         self._device_id = device_id
         self._connection = connection;
+        self._type = auth_type
         self._create_ui();
     def _create_ui(self):
         """creates UI
@@ -239,184 +242,32 @@ class NewWifiConnectionItem(gtk.Table):
         self._quality_bar.set_fraction(frac)
         self._quality_bar.set_text(_("%d%%") % int(per))
 
-        self._name_txt = gtk.Label(self._connection['remote'])
+        self._name_txt = gtk.Label("")
+        self._name_txt.set_markup("<span color='blue'>" +
+                                  self._connection['remote']
+                                  + "</span>")
         self._name_txt.set_alignment(0.0 , 0.5)
 
-        self._encrypt_txt = gtk.Label(self._connection['encryption'])
+        self._encrypt_txt = gtk.Label(self._type)
         self._encrypt_txt.set_alignment(0.0 , 0.5)
 
         self._connect_btn = gtk.Button(_("Connect"))
 
+
+        self.set_row_spacings(5)
+        self.set_col_spacings(5)
         self.attach(self._quality_bar, 0, 1, 0, 2,
                     gtk.SHRINK, gtk.SHRINK)
         self.attach(self._name_txt, 1, 2, 0, 1,
                     gtk.EXPAND|gtk.FILL, gtk.SHRINK)
         self.attach(self._encrypt_txt, 1, 2, 1, 2,
-                    gtk.SHRINK, gtk.SHRINK)
+                    gtk.EXPAND|gtk.FILL, gtk.SHRINK)
         self.attach(self._connect_btn, 2, 3, 0, 2,
                     gtk.SHRINK, gtk.SHRINK)
+        self.attach(gtk.HSeparator(), 0, 3, 2, 3,
+                    gtk.FILL, gtk.SHRINK)
 
 gobject.type_register(NewWifiConnectionItem)
-
-class NewConnectionWindow(gtk.Window):
-    """show new connections as a list
-    """
-
-    def __init__(self, iface):
-        """init
-        Arguments:
-        - `iface`: NetworkIface
-        """
-        gtk.Window.__init__(self)
-        self._iface = iface
-        self.set_title(_("New Connection"))
-        self._package = "wireless_tools"
-        self._devices = self._iface.devices(self._package).keys()
-        self._create_ui();
-        self._cons = [] #connections
-        self.scan()
-    def _create_ui(self):
-        """creates ui
-        """
-        self._ui = gtk.VBox()
-        self.add(self._ui)
-
-        self._refresh_btn = gtk.Button("")
-        self._refresh_btn.connect("clicked", self.scan)
-        self._ui.add(self._refresh_btn)
-
-        self._list= gtk.VBox()
-        self._ui.add(self._list)
-    def _set_scanning(self, status):
-        """disable/enable refresh btn
-        Arguments:
-        - `status`: if True then disable button
-        """
-        if status:
-            self._refresh_btn.set_label(_("Refreshing..."))
-        else:
-            self._refresh_btn.set_label(_("Refresh"))
-        self._refresh_btn.set_sensitive(not status)
-    def scan(self, widget=None):
-        """scan for wifi networks
-        """
-        self._set_scanning(True)
-        d = self._devices[0] #TODO:more than one device support
-        self._iface.scanRemote(d, self._package,
-                               self._scan_callback)
-    def _scan_callback(self, package, exception, args):
-        """wifi scan callback
-
-        Arguments:
-        - `package`: package name
-        - `exception`: exception
-        - `args`: connection array
-        """
-        self._set_scanning(False)
-        if not exception:
-            self._show_list(args[0])
-        else:
-            print exception
-    def _show_list(self, connections):
-        """show list
-
-        Arguments:
-        - `connections`: connections array
-        """
-        d = self._devices[0]
-        #remove old ones
-        map(self._list.remove, self._cons)
-        self._cons = [NewWifiConnectionItem(d, x)
-                      for x in connections]
-        #add new ones
-        map(self._list.add, self._cons)
-        self.show_all()
-
-gobject.type_register(NewConnectionWindow)
-
-class dummy_data_creator(object):
-    """create
-    """
-
-    def __init__(self,
-                 device,
-                 device_name,
-                 essid=None):
-        """init
-        Arguments:
-        - `device`:
-        - `essid`:
-        """
-        self._wireless = False
-        self._device = device
-        self._device_name = device_name
-        if essid is not None:
-            self._essid = essid
-            self._wireless = True
-    def get(self):
-        """get data
-        """
-        data = {}
-        if self._wireless:
-            data["name"] = self._essid
-        else:
-            data["name"] = "Kablo" #TODO: what?
-        data["device_id"] = self._device
-        data["device_name"] = self._device_name
-        #Network Settings
-        data["net_mode"] = "auto"
-        data["net_address"] = ""
-        data["net_mask"] = ""
-        data["net_gateway"] = ""
-        #Name Server Settings
-        data["name_mode"] = "default"
-        data["name_server"] = ""
-        return data
-
-class MainInterface(object):
-    """Imports main window glade
-    """
-
-    def __init__(self):
-        """import glade
-        """
-        bind_glade_domain()
-        self._xml = glade.XML("ui/main.glade")
-        self._xml.signal_connect("on_window_main_destroy",
-                                gtk.main_quit)
-        self._xml.signal_connect("on_new_clicked",
-                                 self.show_news)
-        self._window = self._xml.get_widget("window_main")
-        self._holder = self._xml.get_widget("holder")
-        self.iface = NetworkIface()
-    def show_news(self, widget):
-        a = NewConnectionWindow(self.iface)
-        a.show()
-    def brand_new(self, widget):
-        """deneme
-
-        Arguments:
-
-        - `widget`:
-        """
-        pack = "net_tools"
-        device = self.iface.devices(pack).keys()[0]
-        name = self.iface.devices(pack)[device]
-        a = EditInterface(pack,
-                          "",
-                          is_new=True,
-                          new_data=dummy_data_creator(device, name).get())
-        a.getWindow().show()
-
-    def getWindow(self):
-        """returns window
-        """
-        return self._window
-    def getHolder(self):
-        """returns holder
-        """
-        return self._holder
-
 
 class EditWindowFrame(gtk.Frame):
     """Base EditWindowFrame

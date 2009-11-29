@@ -28,6 +28,7 @@ NewEditWindow - heyya
 #
 
 import gtk
+import gobject
 
 from network_manager_gtk.translation import _
 
@@ -37,6 +38,8 @@ from network_manager_gtk.widgets import ProfileFrame
 from network_manager_gtk.widgets import NetworkFrame
 from network_manager_gtk.widgets import NameServerFrame
 from network_manager_gtk.widgets import WirelessFrame
+
+from network_manager_gtk.widgets import NewWifiConnectionItem
 
 class BaseWindow(gtk.Window):
     """BaseWindow for network_manager_gtk
@@ -65,6 +68,8 @@ class BaseWindow(gtk.Window):
         """listens signals
         """
         pass
+
+gobject.type_register(BaseWindow)
 
 class MainWindow(BaseWindow):
     """Main Window
@@ -131,8 +136,14 @@ class MainWindow(BaseWindow):
         self.connect("destroy", gtk.main_quit)
         self.iface.listen(self._listen_comar)
     def new_profile(self, widget):
-        EditWindow(self.iface,"wireless_tools", "new",
-                   device_id=self.iface.devices("wireless_tools").keys()[0]).show()
+        #TODO: classic mode support
+        self.classic = False
+        if self.classic:
+            device = self.iface.devices("wireless_tools").keys()[0]
+            EditWindow(self.iface,"wireless_tools", "new",
+                       device_id=device)
+        else:
+            NewConnectionWindow(self.iface).show()
     def _listen_comar(self, package, signal, args):
         """comar listener
 
@@ -168,6 +179,7 @@ class MainWindow(BaseWindow):
                 self._holder.add_profile(package,
                                          connection,
                                          state)
+gobject.type_register(MainWindow)
 
 class EditWindow(BaseWindow):
     """Edit Window
@@ -272,3 +284,100 @@ class EditWindow(BaseWindow):
         self.nsf.collect_data(data)
         if self.is_wireless: self.wf.collect_data(data)
         return data
+
+gobject.type_register(EditWindow)
+
+class NewConnectionWindow(BaseWindow):
+    """show new connections as a list
+    """
+
+    def __init__(self, iface):
+        """init
+        Arguments:
+        - `iface`: NetworkIface
+        """
+        self._package = "wireless_tools"
+        self._cons = [] #connections
+        self._devices = iface.devices(self._package).keys()
+        BaseWindow.__init__(self, iface)
+    def _set_style(self):
+        self.set_title(_("New Connection"))
+        self.set_default_size(483, 300)
+    def _create_ui(self):
+        """creates ui
+        """
+        self._ui = gtk.VBox(homogeneous=False,
+                            spacing=10)
+        self.add(self._ui)
+        self._ui.show()
+
+        self._refresh_btn = gtk.Button("")
+        self._ui.pack_start(self._refresh_btn,
+                            expand=False)
+        self._refresh_btn.show()
+
+        self._list= gtk.VBox(homogeneous=True,
+                             spacing=5)
+        self._ui.pack_start(self._list,
+                            expand=False,
+                            fill=False)
+        self._list.show_all()
+
+        self.scan()
+    def _listen_signals(self):
+        self._refresh_btn.connect("clicked", self.scan)
+    def _set_scanning(self, status):
+        """disable/enable refresh btn
+        Arguments:
+        - `status`: if True then disable button
+        """
+        if status:
+            self._refresh_btn.set_label(_("Refreshing..."))
+        else:
+            self._refresh_btn.set_label(_("Refresh"))
+        self._refresh_btn.set_sensitive(not status)
+    def scan(self, widget=None):
+        """scan for wifi networks
+        """
+        self._set_scanning(True)
+        d = self._devices[0] #TODO:more than one device support
+        self.iface.scanRemote(d, self._package,
+                               self._scan_callback)
+    def _scan_callback(self, package, exception, args):
+        """wifi scan callback
+
+        Arguments:
+        - `package`: package name
+        - `exception`: exception
+        - `args`: connection array
+        """
+        self._set_scanning(False)
+        if not exception:
+            self._show_list(args[0])
+        else:
+            print exception
+    def _show_list(self, connections):
+        """show list
+
+        Arguments:
+        - `connections`: connections array
+        """
+        d = self._devices[0]
+        methods = self.iface.authMethods("wireless_tools")
+        def get_type(x):
+            for name, desc in methods:
+                if name == x:
+                    return desc
+        #remove old ones
+        map(self._list.remove, self._cons)
+        self._cons = []
+        #add new ones
+        for i, x in enumerate(connections):
+            m = get_type(x["encryption"])
+            self._cons.append(NewWifiConnectionItem(d, x, m))
+            self._list.pack_start(self._cons[i],
+                                  expand=False,
+                                  fill=False)
+        self._list.show_all()
+
+gobject.type_register(NewConnectionWindow)
