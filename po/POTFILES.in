@@ -4,8 +4,9 @@
 network-manager-gtk.py
 network_manager_gtk/widgets.py
 network_manager_gtk/translation.py
+network_manager_gtk/windows.py
 
 #Glade .h files
-ui/main.glade.h
-ui/edit.glade.h
+#ui/main.glade.h
+#ui/edit.glade.h
 

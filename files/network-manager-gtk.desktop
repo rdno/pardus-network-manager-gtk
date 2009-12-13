@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Network Manager GTK
+Name[tr]=Ağ Yöneticisi GTK
+Comment=An application for managing network connections.
+Comment[tr]=Ağ bağlantılarını yönetmenizi sağlayan bir uygulama.
+Exec=network-manager-gtk
+Icon=applications-internet
+Type=Application
+Categories=Application;Gtk;System;

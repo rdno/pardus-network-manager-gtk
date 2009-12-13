@@ -117,7 +117,7 @@ class MainWindow(BaseWindow):
                        data["package"],
                        data["connection"]).show()
         else:
-            m = _("Do you wanna delete the connection  '%s' ?") % \
+            m = _("Do you want to delete the connection  '%s' ?") % \
                 data['connection']
             dialog = gtk.MessageDialog(type=gtk.MESSAGE_WARNING,
                                        buttons=gtk.BUTTONS_YES_NO,

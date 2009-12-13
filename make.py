@@ -10,8 +10,8 @@ def mo():
         os.system("mkdir -p locale/%s/LC_MESSAGES" % lang)
         os.system("msgfmt --output-file=locale/%s/LC_MESSAGES/network_manager_gtk.mo po/%s.po" % (lang, lang))
 def pot():
-    glade_extract("main.glade")
-    glade_extract("edit.glade")
+    #glade_extract("main.glade")
+    #glade_extract("edit.glade")
     xgettext_cmd = "xgettext --keyword=_ --keyword=N_"
     os.system("%s -f %s --output=%s" % (xgettext_cmd,
                                         "po/POTFILES.in",

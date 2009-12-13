@@ -665,7 +665,7 @@ class WirelessFrame(EditWindowFrame):
             table = gtk.Table(rows=4, columns=3)
 
             self._wifiholder = WifiItemHolder()
-            self._scan_btn = gtk.Button("Scan")
+            self._scan_btn = gtk.Button(_("Scan"))
 
             table.attach(self._essid_lb, 1, 2, 0, 1,
                          gtk.FILL, gtk.SHRINK)

@@ -2,18 +2,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Network Manager GTK\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-23 11:18+0300\n"
+"POT-Creation-Date: 2009-12-13 15:29+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Rıdvan Örsvuran <flasherdn@gmail.com>\n"
 "Language-Team:  <flasherdn@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: network-manager-gtk.py:63
-#, python-format
-msgid "Do you wanna delete the connection  '%(name)s' ?"
-msgstr "'%(name)s'  bağlantısı silinsin mi?"
 
 #: network_manager_gtk/widgets.py:54
 msgid "Edit"
@@ -39,114 +34,165 @@ msgstr "Bağlanıyor"
 msgid "Cable or device is unplugged."
 msgstr "Kablo ya da aygıt bağlı değil."
 
-#: network_manager_gtk/widgets.py:126
+#: network_manager_gtk/widgets.py:177
 msgid "Name"
 msgstr "İsim"
 
-#: network_manager_gtk/widgets.py:127
+#: network_manager_gtk/widgets.py:178
 msgid "Quality"
 msgstr "Kalite"
 
-#: network_manager_gtk/widgets.py:144
+#: network_manager_gtk/widgets.py:195
+#: network_manager_gtk/widgets.py:243
 #, python-format
 msgid "%d%%"
 msgstr "%%%d"
 
-#: network_manager_gtk/widgets.py:152
+#: network_manager_gtk/widgets.py:203
 msgid "Scanning..."
 msgstr "Taranıyor..."
 
-#: network_manager_gtk/widgets.py:384
-msgid "No Authentication"
-msgstr "Doğrulama Yok"
+#: network_manager_gtk/widgets.py:254
+#: network_manager_gtk/widgets.py:310
+msgid "Connect"
+msgstr "Bağlan"
 
-#: ui/main.glade.h:2
-msgid "Network Manager"
-msgstr "Ağ Yöneticisi"
+#: network_manager_gtk/widgets.py:303
+msgid "Ethernet"
+msgstr "Ethernet"
 
-#: ui/edit.glade.h:1
-msgid "<b>Name Servers</b>"
-msgstr "<b>İsim Sunucuları</b>"
-
-#: ui/edit.glade.h:2
-msgid "<b>Network Settings</b>"
-msgstr "<b>Ağ Ayarları</b>"
-
-#: ui/edit.glade.h:3
+#: network_manager_gtk/widgets.py:412
 msgid "<b>Profile</b>"
 msgstr "<b>Profil</b>"
 
-#: ui/edit.glade.h:4
-msgid "<b>Wireless</b>"
-msgstr "<b>Kablosuz</b>"
-
-#: ui/edit.glade.h:5
-msgid "Address:"
-msgstr "Adres:"
-
-#: ui/edit.glade.h:6
-msgid "Apply"
-msgstr "Uygula"
-
-#: ui/edit.glade.h:7
-msgid "Automatic"
-msgstr "Otomatik"
-
-#: ui/edit.glade.h:8
-msgid "Cancel"
-msgstr "İptal"
-
-#: ui/edit.glade.h:9
-msgid "Custom"
-msgstr "Özel"
-
-#: ui/edit.glade.h:10
-msgid "Default"
-msgstr "Öntanımlı"
-
-#: ui/edit.glade.h:11
-msgid "Default Gateway:"
-msgstr "Öntanımlı Ağ Geçidi:"
-
-#: ui/edit.glade.h:12
-msgid "ESSID:"
-msgstr "ESSID:"
-
-#: ui/edit.glade.h:14
-msgid "Edit Connection"
-msgstr "Bağlantıyı Düzenle"
-
-#: ui/edit.glade.h:15
-msgid "Hide Password"
-msgstr "Parolayı Sakla"
-
-#: ui/edit.glade.h:16
-msgid "Network Mask:"
-msgstr "Ağ Maskesi:"
-
-#: ui/edit.glade.h:17
-msgid "Password:"
-msgstr "Parola:"
-
-#: ui/edit.glade.h:18
+#: network_manager_gtk/widgets.py:415
 msgid "Profile Name:"
 msgstr "Profil Adı:"
 
-#: ui/edit.glade.h:19
-msgid "Scan"
-msgstr "Tara"
+#: network_manager_gtk/widgets.py:447
+msgid "<b>Network Settings</b>"
+msgstr "<b>Ağ Ayarları</b>"
 
-#: ui/edit.glade.h:20
-msgid "Security Type:"
-msgstr "Güvenlik Türü:"
-
-#: ui/edit.glade.h:21
+#: network_manager_gtk/widgets.py:450
 msgid "Use DHCP"
 msgstr "DHCP Kullan:"
 
-#: ui/edit.glade.h:22
+#: network_manager_gtk/widgets.py:452
 msgid "Use Manual Settings"
 msgstr "Özel Ayarları Kullan"
+
+#: network_manager_gtk/widgets.py:454
+msgid "Address:"
+msgstr "Adres:"
+
+#: network_manager_gtk/widgets.py:456
+msgid "Network Mask:"
+msgstr "Ağ Maskesi:"
+
+#: network_manager_gtk/widgets.py:458
+msgid "Default Gateway:"
+msgstr "Öntanımlı Ağ Geçidi:"
+
+#: network_manager_gtk/widgets.py:465
+#: network_manager_gtk/widgets.py:581
+msgid "Custom"
+msgstr "Özel"
+
+#: network_manager_gtk/widgets.py:572
+msgid "<b>Name Servers</b>"
+msgstr "<b>İsim Sunucuları</b>"
+
+#: network_manager_gtk/widgets.py:575
+msgid "Default"
+msgstr "Öntanımlı"
+
+#: network_manager_gtk/widgets.py:578
+msgid "Automatic"
+msgstr "Otomatik"
+
+#: network_manager_gtk/widgets.py:636
+msgid "<b>Wireless</b>"
+msgstr "<b>Kablosuz</b>"
+
+#: network_manager_gtk/widgets.py:639
+msgid "ESSID:"
+msgstr "ESSID:"
+
+#: network_manager_gtk/widgets.py:644
+msgid "Security Type:"
+msgstr "Güvenlik Türü:"
+
+#: network_manager_gtk/widgets.py:649
+#: network_manager_gtk/widgets.py:654
+msgid "No Authentication"
+msgstr "Doğrulama Yok"
+
+#: network_manager_gtk/widgets.py:655
+msgid "Password:"
+msgstr "Parola:"
+
+#: network_manager_gtk/widgets.py:661
+msgid "Hide Password"
+msgstr "Parolayı Sakla"
+
+#: network_manager_gtk/widgets.py:668
+msgid "Scan"
+msgstr "Tara"
+
+#: network_manager_gtk/windows.py:90
+msgid "Network Manager"
+msgstr "Ağ Yöneticisi"
+
+#: network_manager_gtk/windows.py:96
+#: network_manager_gtk/windows.py:303
+msgid "New Connection"
+msgstr "Yeni Bağlantı"
+
+#: network_manager_gtk/windows.py:120
+#, python-format
+msgid "Do you want to delete the connection  '%s' ?"
+msgstr "'%s'  bağlantısı silinsin mi?"
+
+#: network_manager_gtk/windows.py:208
+msgid "Edit Connection"
+msgstr "Bağlantıyı Düzenle"
+
+#: network_manager_gtk/windows.py:254
+msgid "Apply"
+msgstr "Uygula"
+
+#: network_manager_gtk/windows.py:255
+#: network_manager_gtk/windows.py:472
+msgid "Cancel"
+msgstr "İptal"
+
+#: network_manager_gtk/windows.py:335
+msgid "Refreshing..."
+msgstr "Yenileniyor..."
+
+#: network_manager_gtk/windows.py:337
+msgid "Refresh"
+msgstr "Yenile"
+
+#: network_manager_gtk/windows.py:422
+msgid "Save Profile"
+msgstr "Profili Kaydet"
+
+#: network_manager_gtk/windows.py:426
+msgid "New Profile"
+msgstr "Yeni Profil"
+
+#: network_manager_gtk/windows.py:451
+msgid "Other Settings"
+msgstr "Diğer Ayarlar"
+
+#: network_manager_gtk/windows.py:470
+msgid "Save"
+msgstr "Kaydet"
+
+#: network_manager_gtk/windows.py:471
+msgid "Save & Connect"
+msgstr "Kaydet & Bağlan"
 
 #~ msgid "Change Password"
 #~ msgstr "Parolayı Değiştir"

@@ -20,8 +20,11 @@
 import gettext
 
 APP_NAME="network_manager_gtk"
-LOCALE_DIR= "locale"
-trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=False)
+LOCALE_DIR= "/usr/share/locale"
+try:
+    trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=False)
+except IOError: #dev mode (no install mode)
+    trans = gettext.translation(APP_NAME, "locale", fallback=False)
 _ = trans.ugettext
 def bind_glade_domain():
     from gtk import glade
