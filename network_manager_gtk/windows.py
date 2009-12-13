@@ -40,6 +40,7 @@ from network_manager_gtk.widgets import NameServerFrame
 from network_manager_gtk.widgets import WirelessFrame
 
 from network_manager_gtk.widgets import NewWifiConnectionItem
+from network_manager_gtk.widgets import NewEthernetConnectionItem
 
 class BaseWindow(gtk.Window):
     """BaseWindow for network_manager_gtk
@@ -296,9 +297,7 @@ class NewConnectionWindow(BaseWindow):
         Arguments:
         - `iface`: NetworkIface
         """
-        self._package = "wireless_tools"
         self._cons = [] #connections
-        self._devices = iface.devices(self._package).keys()
         BaseWindow.__init__(self, iface)
     def _set_style(self):
         self.set_title(_("New Connection"))
@@ -323,6 +322,7 @@ class NewConnectionWindow(BaseWindow):
                             fill=False)
         self._list.show_all()
 
+        self._show_list([]) #show none wireless connections
         self.scan()
     def _listen_signals(self):
         self._refresh_btn.connect("clicked", self.scan)
@@ -339,10 +339,17 @@ class NewConnectionWindow(BaseWindow):
     def scan(self, widget=None):
         """scan for wifi networks
         """
-        self._set_scanning(True)
-        d = self._devices[0] #TODO:more than one device support
-        self.iface.scanRemote(d, self._package,
-                               self._scan_callback)
+        #if user have wireless support
+        if self.get_devices("wireless_tools"):
+            self._set_scanning(True)
+            #TODO:more than one device support
+            d = self.get_devices("wireless_tools")[0]
+            self.iface.scanRemote(d, "wireless_tools",
+                                  self._scan_callback)
+    def get_devices(self, package):
+        """returns devices of package
+        """
+        return self.iface.devices(package).keys()
     def _scan_callback(self, package, exception, args):
         """wifi scan callback
 
@@ -358,16 +365,15 @@ class NewConnectionWindow(BaseWindow):
             print exception
     def create_new(self, widget, data):
         NewConnectionEditWindow(self.iface,
-                                "wireless_tools",
-                                self._devices[0],
+                                data["package"],
+                                data["device"],
                                 data["connection"]).show()
     def _show_list(self, connections):
         """show list
 
         Arguments:
-        - `connections`: connections array
+        - `connections`: wireless connections array
         """
-        d = self._devices[0]
         methods = self.iface.authMethods("wireless_tools")
         def get_type(x):
             for name, desc in methods:
@@ -377,14 +383,28 @@ class NewConnectionWindow(BaseWindow):
         map(self._list.remove, self._cons)
         self._cons = []
         #add new ones
-        for i, x in enumerate(connections):
-            m = get_type(x["encryption"])
-            self._cons.append(NewWifiConnectionItem(d, x, m))
-            self._list.pack_start(self._cons[i],
-                                  expand=False,
-                                  fill=False)
-            self._cons[i].on_connect(self.create_new)
+        ##ethernet
+        for device in self.get_devices("net_tools"):
+            name = self.iface.devices("net_tools")[device]
+            self.add_to_list(NewEthernetConnectionItem(device,
+                                                       name))
+        ##wireless
+        device_id = self.get_devices("wireless_tools")[0]
+        for connection in connections:
+            encryption = get_type(connection["encryption"])
+            self.add_to_list(NewWifiConnectionItem(device_id,
+                                                   connection,
+                                                   encryption))
         self._list.show_all()
+    def add_to_list(self, item):
+        """add connection item to list
+        - `item`: connection item
+        """
+        self._list.pack_start(item,
+                              expand=False,
+                              fill=False)
+        self._cons.append(item)
+        item.on_connect(self.create_new)
 
 gobject.type_register(NewConnectionWindow)
 

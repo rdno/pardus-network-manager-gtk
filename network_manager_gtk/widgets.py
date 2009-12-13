@@ -227,11 +227,11 @@ class NewWifiConnectionItem(gtk.Table):
                                   ...}
         - `auth_type`: wpa-psk -> WPA Ortak Anahtar
         """
-        gtk.Table.__init__(self, rows=3, columns=4)
+        gtk.Table.__init__(self, rows=3, columns=3)
         self._device_id = device_id
-        self._connection = connection;
+        self._connection = connection
         self._type = auth_type
-        self._create_ui();
+        self._create_ui()
     def _create_ui(self):
         """creates UI
         """
@@ -270,14 +270,66 @@ class NewWifiConnectionItem(gtk.Table):
         """on connect button clicked
 
         Arguments:
-        - `func`:
+        - `func`: callback function
         """
         self._connect_btn.connect("clicked",
                                   func,
-                                  {"connection":self._connection})
+                                  {"connection":self._connection,
+                                   "device": self._device_id,
+                                   "package": "wireless_tools"})
 
 gobject.type_register(NewWifiConnectionItem)
 
+class NewEthernetConnectionItem(gtk.Table):
+    """new ethernet connection ite
+    """
+
+    def __init__(self, device_id, device_name):
+        """init
+
+        Arguments:
+        - `device_id`: device id
+        - `device_name`: device name to show user
+        """
+        gtk.Table.__init__(self, rows=3, columns=2)
+        self._device_id = device_id
+        self._device_name = device_name
+        self._create_ui()
+    def _create_ui(self):
+        """creates ui
+        """
+        self._name_lb = gtk.Label("")
+        self._name_lb.set_markup("<span color='blue'>" +
+                                  _("Ethernet")
+                                  + "</span>")
+        self._name_lb.set_alignment(0.0, 0.5)
+
+        self._device_name_lb = gtk.Label(self._device_name)
+        self._device_name_lb.set_alignment(0.0, 0.5)
+
+        self._connect_btn = gtk.Button(_("Connect"))
+
+        self.set_row_spacings(5)
+        self.set_col_spacings(5)
+        self.attach(self._name_lb, 0, 1, 0, 1,
+                    gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        self.attach(self._device_name_lb, 0, 1, 1, 2,
+                    gtk.EXPAND|gtk.FILL, gtk.SHRINK)
+        self.attach(self._connect_btn, 2, 3, 0, 2,
+                    gtk.SHRINK, gtk.SHRINK)
+        self.attach(gtk.HSeparator(), 0, 3, 2, 3,
+                    gtk.FILL, gtk.SHRINK)
+    def on_connect(self, func):
+        """on connect button clicked
+
+        Arguments:
+        - `func`:callback function
+        """
+        self._connect_btn.connect("clicked",
+                                  func,
+                                  {"connection":"",
+                                   "device":self._device_id,
+                                   "package":"net_tools"})
 class EditWindowFrame(gtk.Frame):
     """Base EditWindowFrame
     """

@@ -13,8 +13,8 @@ and start program
 
 It can
     * activate/deactivate profiles
-    * show and edit settings
-    * create profile
+    * show and edit settings (Ethernet & Wireless)
+    * create profile (Ethernet & Wireless)
 
 TODO
     * error handling like no profile name
