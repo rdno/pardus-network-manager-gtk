@@ -1,8 +1,22 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""includes Network Manager gtk's widgets
 
+ConnectionWidget - A special widget contains connection related stuff
+ProfilesHolder - Holds Profile List 
+WifiItemHolder - holder for wifi connections (for EditWindow)
+NewWifiConnectionItem - new wifi connection item
+                        (for NewConnectionWindow)
+NewEthernetConnectionItem - new ethernet connection item
+                            (for NewConnectionWindow)
+EditWindowFrame - Base Edit Window Frame
+ProfileFrame - Edit Window > Profile Frame
+NetworkFrame - Edit Window > Network Settings Frame
+NameServerFrame - Edit Window > Name Server Frame
+WirelessFrame - Edit Settings Window > WirelessFrame
+
+"""
 #
-# Rıdvan Örsvuran (C) 2009
+# Rıdvan Örsvuran (C) 2009, 2010
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,8 +43,7 @@ import gobject
 from gtk import glade
 
 class ConnectionWidget(gtk.Table):
-    """A special widget contains connection related stuff
-    """
+    """A special widget contains connection related stuff"""
     def __init__(self, package_name, connection_name, state=None):
         """init
         Arguments:
@@ -112,12 +125,9 @@ class ConnectionWidget(gtk.Table):
 gobject.type_register(ConnectionWidget)
 
 class ProfilesHolder(gtk.ScrolledWindow):
-    """Holds Profile List
-    """
-
+    """Holds Profile List"""
     def __init__(self):
-        """init
-        """
+        """init"""
         gtk.ScrolledWindow.__init__(self)
         self.set_shadow_type(gtk.SHADOW_IN)
         self.set_policy(gtk.POLICY_NEVER,
@@ -158,9 +168,7 @@ class ProfilesHolder(gtk.ScrolledWindow):
 gobject.type_register(ProfilesHolder)
 
 class WifiItemHolder(gtk.ScrolledWindow):
-    """holder for wifi connections
-    """
-
+    """holder for wifi connections (for EditWindow)"""
     def __init__(self):
         """init
         """
@@ -210,8 +218,7 @@ class WifiItemHolder(gtk.ScrolledWindow):
 gobject.type_register(WifiItemHolder)
 
 class NewWifiConnectionItem(gtk.Table):
-    """new wifi connection
-    """
+    """new wifi connection item (for NewConnectionWindow)"""
     def __init__(self,
                  device_id,
                  connection,
@@ -281,9 +288,7 @@ class NewWifiConnectionItem(gtk.Table):
 gobject.type_register(NewWifiConnectionItem)
 
 class NewEthernetConnectionItem(gtk.Table):
-    """new ethernet connection ite
-    """
-
+    """new ethernet connection item (for NewConnectionWindow)"""
     def __init__(self, device_id, device_name):
         """init
 
@@ -331,9 +336,7 @@ class NewEthernetConnectionItem(gtk.Table):
                                    "device":self._device_id,
                                    "package":"net_tools"})
 class EditWindowFrame(gtk.Frame):
-    """Base EditWindowFrame
-    """
-
+    """Base EditWindowFrame"""
     def __init__(self, data):
         """init
 
@@ -404,8 +407,7 @@ class EditWindowFrame(gtk.Frame):
                        "enable":on_custom_enable,
                        "disable":on_custom_disable})
 class ProfileFrame(EditWindowFrame):
-    """Edit Window > Profile Frame
-    """
+    """Edit Window > Profile Frame"""
     def __init__(self, data):
         EditWindowFrame.__init__(self, data)
     def _create_ui(self):
@@ -563,9 +565,7 @@ class NetworkFrame(EditWindowFrame):
             data["net_gateway"] = self.get_text_of(self._gateway_txt)
 
 class NameServerFrame(EditWindowFrame):
-    """Edit Window > Name Server Frame
-    """
-
+    """Edit Window > Name Server Frame"""
     def __init__(self, data):
         EditWindowFrame.__init__(self, data)
     def _create_ui(self):
@@ -618,9 +618,7 @@ class NameServerFrame(EditWindowFrame):
             data["name_server"] = self.get_text_of(self._custom_txt)
 
 class WirelessFrame(EditWindowFrame):
-    """Edit Settings Window > WirelessFrame
-    """
-
+    """Edit Settings Window > WirelessFrame"""
     def __init__(self, data, iface,
                  package=None,connection=None,
                  with_list=True, is_new=False,

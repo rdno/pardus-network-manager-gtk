@@ -1,17 +1,15 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 """Network Manager gtk windows module
 
-MainWindow - Main Window
+
+BaseWindow - Base window for network_manager_gtk
 EditWindow - Edit Settings Window
-NewWindow - New Profile Window
-NewEditWindow - heyya
+NewConnectionWindow - show new connections as a list
+NewConnectionEditWindow - new connection settings window
 
 """
-
 #
-# Rıdvan Örsvuran (C) 2009
+# Rıdvan Örsvuran (C) 2009, 2010
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,116 +69,6 @@ class BaseWindow(gtk.Window):
         pass
 
 gobject.type_register(BaseWindow)
-
-class MainWindow(BaseWindow):
-    """Main Window
-    profile list
-    """
-
-    def __init__(self, iface):
-        """init MainWindow
-
-        Arguments:
-        - `iface`: backend.NetworkIface
-        """
-        BaseWindow.__init__(self, iface)
-        self.get_state = lambda p,c:self.iface.info(p,c)[u"state"]
-        self._get_profiles()
-    def _set_style(self):
-        self.set_title(_("Network Manager"))
-        self.set_default_size(483, 300)
-    def _create_ui(self):
-        self._vbox = gtk.VBox()
-        self.add(self._vbox)
-
-        self._new_btn = gtk.Button(_('New Connection'))
-        self._vbox.pack_start(self._new_btn, expand=False)
-
-        self._holder = ProfilesHolder()
-        self._holder.set_connection_signal(self._connection_callback)
-        self._vbox.pack_start(self._holder)
-    def _connection_callback(self, widget, data):
-        """listens ConnectionWidget's signals
-
-        Arguments:
-        - `widget`: widget
-        - `data`: {'action':(toggle | edit | delete)
-                   'package':package_name,
-                   'connection':connection_name}
-        """
-        action = data["action"]
-        if action == "toggle":
-            self.iface.toggle(data["package"],
-                              data["connection"])
-        elif action == "edit":
-            EditWindow(self.iface,
-                       data["package"],
-                       data["connection"]).show()
-        else:
-            m = _("Do you want to delete the connection  '%s' ?") % \
-                data['connection']
-            dialog = gtk.MessageDialog(type=gtk.MESSAGE_WARNING,
-                                       buttons=gtk.BUTTONS_YES_NO,
-                                       message_format=m)
-            response = dialog.run()
-            if response == gtk.RESPONSE_YES:
-                try:
-                    self.iface.deleteConnection(data['package'],
-                                                data['connection'])
-                except Exception, e:
-                    print "Exception:",e
-            dialog.destroy()
-    def _listen_signals(self):
-        """listen some signals
-        """
-        self._new_btn.connect("clicked", self.new_profile)
-        self.connect("destroy", gtk.main_quit)
-        self.iface.listen(self._listen_comar)
-    def new_profile(self, widget):
-        #TODO: classic mode support
-        self.classic = False
-        if self.classic:
-            device = self.iface.devices("wireless_tools").keys()[0]
-            EditWindow(self.iface,"wireless_tools", "new",
-                       device_id=device)
-        else:
-            NewConnectionWindow(self.iface).show()
-    def _listen_comar(self, package, signal, args):
-        """comar listener
-
-        Arguments:
-        - `package`: package
-        - `signal`: signal type
-        - `args`:   arguments
-        """
-        args = map(lambda x: unicode(x), list(args))
-        if signal == "stateChanged":
-            self._holder.update_profile(package,
-                                        args[0],
-                                        args[1:])
-        elif signal == "deviceChanged":
-            print "TODO:Listen comar signal deviceChanged "
-        elif signal == "connectionChanged":
-            if args[0] == u"changed":
-                pass#Nothing to do ?
-            elif args[0] == u"added":
-                self._holder.add_profile(package,
-                                         args[1],
-                                         self.get_state(package,
-                                                        args[1]))
-            elif args[0] == u"deleted":
-                self._holder.remove_profile(package,
-                                            args[1])
-    def _get_profiles(self):
-        """get profiles from iface
-        """
-        for package in self.iface.packages():
-            for connection in self.iface.connections(package):
-                state = self.get_state(package, connection)
-                self._holder.add_profile(package,
-                                         connection,
-                                         state)
-gobject.type_register(MainWindow)
 
 class EditWindow(BaseWindow):
     """Edit Window
@@ -289,8 +177,7 @@ class EditWindow(BaseWindow):
 gobject.type_register(EditWindow)
 
 class NewConnectionWindow(BaseWindow):
-    """show new connections as a list
-    """
+    """show new connections as a list"""
 
     def __init__(self, iface):
         """init
@@ -409,9 +296,7 @@ class NewConnectionWindow(BaseWindow):
 gobject.type_register(NewConnectionWindow)
 
 class NewConnectionEditWindow(BaseWindow):
-    """New Connection Settings Window
-    """
-
+    """New Connection Settings Window"""
     def __init__(self, iface,
                  package, device, data):
         self.package = package

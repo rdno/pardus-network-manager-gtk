@@ -1,8 +1,12 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""includes network_manager_gtk's translation related stuff
 
+_ - trans.ugettext (ex: _('string to translate'))
+bind_glade_domain - bind domain for glade translation
+
+"""
 #
-# Rıdvan Örsvuran (C) 2009
+# Rıdvan Örsvuran (C) 2009, 2010
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,10 +25,11 @@ import gettext
 
 APP_NAME="network_manager_gtk"
 LOCALE_DIR= "/usr/share/locale"
+fallback = False
 try:
-    trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=False)
+    trans = gettext.translation(APP_NAME, LOCALE_DIR, fallback=fallback)
 except IOError: #dev mode (no install mode)
-    trans = gettext.translation(APP_NAME, "locale", fallback=False)
+    trans = gettext.translation(APP_NAME, "locale", fallback=fallback)
 _ = trans.ugettext
 def bind_glade_domain():
     from gtk import glade

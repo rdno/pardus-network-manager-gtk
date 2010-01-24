@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 #
-# Rıdvan Örsvuran (C) 2009
+# Rıdvan Örsvuran (C) 2009, 2010
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,36 +17,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
-
 import pygtk
 pygtk.require('2.0')
 import gtk
 
-from network_manager_gtk.backend import NetworkIface
+from network_manager_gtk import NetworkManager
+from network_manager_gtk.translation import _
+from network_manager_gtk.windows import BaseWindow
 
-from network_manager_gtk.windows import MainWindow
-
-
-class Base(object):
+class MainWindow(BaseWindow):
+    """Standalone window for network_manager_gtk"""
     def __init__(self):
-        self._dbusMainLoop()
-        self.iface = NetworkIface()
-        self.window = MainWindow(self.iface)
+        """init"""
+        self.manager = NetworkManager()
+        BaseWindow.__init__(self, None)
+    def _set_style(self):
+        self.set_title(_("Network Manager"))
+        self.set_default_size(483, 300)
+    def _create_ui(self):
+        self.add(self.manager)
+    def _listen_signals(self):
+        self.connect("destroy", gtk.main_quit)
+    def run(self, args):
+        """Runs the program with args
 
-    def _dbusMainLoop(self):
-        from dbus.mainloop.glib import DBusGMainLoop
-        DBusGMainLoop(set_as_default = True)
-
-    def run(self, argv=None):
-        """Runs the program
         Arguments:
         - `argv`: sys.argv
         """
-        self.window.show_all()
+        self.show_all()
         gtk.main()
 
 if __name__ == "__main__":
     import sys
-    app = Base()
-    app.run(sys.argv)
+    MainWindow().run(sys.argv)

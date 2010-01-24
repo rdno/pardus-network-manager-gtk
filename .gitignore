@@ -4,3 +4,4 @@ TAGS
 .directory
 #*
 *.glade.h
+*.mo
