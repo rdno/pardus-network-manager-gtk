@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Network Manager GTK\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-13 15:29+0200\n"
+"POT-Creation-Date: 2010-01-24 12:41+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Rıdvan Örsvuran <flasherdn@gmail.com>\n"
 "Language-Team:  <flasherdn@gmail.com>\n"
@@ -10,90 +10,94 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: network_manager_gtk/widgets.py:54
+#: network-manager-gtk.py:35
+msgid "Network Manager"
+msgstr "Network Manager"
+
+#: network_manager_gtk/widgets.py:67
 msgid "Edit"
 msgstr "Edit"
 
-#: network_manager_gtk/widgets.py:55
+#: network_manager_gtk/widgets.py:68
 msgid "Delete"
 msgstr "Delete"
 
-#: network_manager_gtk/widgets.py:76
+#: network_manager_gtk/widgets.py:89
 msgid "Disconnected"
 msgstr "Disconnected"
 
-#: network_manager_gtk/widgets.py:77
+#: network_manager_gtk/widgets.py:90
 msgid "Connected"
 msgstr "Connected"
 
-#: network_manager_gtk/widgets.py:78
+#: network_manager_gtk/widgets.py:91
 msgid "Connecting"
 msgstr "Connecting"
 
-#: network_manager_gtk/widgets.py:80
+#: network_manager_gtk/widgets.py:93
 msgid "Cable or device is unplugged."
 msgstr "Cable or device is unplugged."
 
-#: network_manager_gtk/widgets.py:177
+#: network_manager_gtk/widgets.py:185
 msgid "Name"
 msgstr "Name"
 
-#: network_manager_gtk/widgets.py:178
+#: network_manager_gtk/widgets.py:186
 msgid "Quality"
 msgstr "Quality"
 
-#: network_manager_gtk/widgets.py:195
-#: network_manager_gtk/widgets.py:243
+#: network_manager_gtk/widgets.py:203
+#: network_manager_gtk/widgets.py:250
 #, python-format
 msgid "%d%%"
 msgstr "%d%%"
 
-#: network_manager_gtk/widgets.py:203
+#: network_manager_gtk/widgets.py:211
 msgid "Scanning..."
 msgstr "Scanning..."
 
-#: network_manager_gtk/widgets.py:254
-#: network_manager_gtk/widgets.py:310
+#: network_manager_gtk/widgets.py:261
+#: network_manager_gtk/widgets.py:315
 msgid "Connect"
 msgstr "Connect"
 
-#: network_manager_gtk/widgets.py:303
+#: network_manager_gtk/widgets.py:308
 msgid "Ethernet"
 msgstr "Ethernet"
 
-#: network_manager_gtk/widgets.py:412
+#: network_manager_gtk/widgets.py:414
 msgid "<b>Profile</b>"
 msgstr "<b>Profile</b>"
 
-#: network_manager_gtk/widgets.py:415
+#: network_manager_gtk/widgets.py:417
 msgid "Profile Name:"
 msgstr "Profile Name:"
 
-#: network_manager_gtk/widgets.py:447
+#: network_manager_gtk/widgets.py:449
 msgid "<b>Network Settings</b>"
 msgstr "<b>Network Settings</b>"
 
-#: network_manager_gtk/widgets.py:450
+#: network_manager_gtk/widgets.py:452
 msgid "Use DHCP"
 msgstr "Use DHCP"
 
-#: network_manager_gtk/widgets.py:452
+#: network_manager_gtk/widgets.py:454
 msgid "Use Manual Settings"
 msgstr "Use Manual Settings"
 
-#: network_manager_gtk/widgets.py:454
+#: network_manager_gtk/widgets.py:456
 msgid "Address:"
 msgstr "Address:"
 
-#: network_manager_gtk/widgets.py:456
+#: network_manager_gtk/widgets.py:458
 msgid "Network Mask:"
 msgstr "Network Mask:"
 
-#: network_manager_gtk/widgets.py:458
+#: network_manager_gtk/widgets.py:460
 msgid "Default Gateway:"
 msgstr "Default Gateway:"
 
-#: network_manager_gtk/widgets.py:465
+#: network_manager_gtk/widgets.py:467
 #: network_manager_gtk/widgets.py:581
 msgid "Custom"
 msgstr "Custom"
@@ -110,89 +114,85 @@ msgstr "Default"
 msgid "Automatic"
 msgstr "Automatic"
 
-#: network_manager_gtk/widgets.py:636
+#: network_manager_gtk/widgets.py:634
 msgid "<b>Wireless</b>"
 msgstr "<b>Wireless</b>"
 
-#: network_manager_gtk/widgets.py:639
+#: network_manager_gtk/widgets.py:637
 msgid "ESSID:"
 msgstr "ESSID:"
 
-#: network_manager_gtk/widgets.py:644
+#: network_manager_gtk/widgets.py:642
 msgid "Security Type:"
 msgstr "Security Type:"
 
-#: network_manager_gtk/widgets.py:649
-#: network_manager_gtk/widgets.py:654
+#: network_manager_gtk/widgets.py:647
+#: network_manager_gtk/widgets.py:652
 msgid "No Authentication"
 msgstr "No Authentication"
 
-#: network_manager_gtk/widgets.py:655
+#: network_manager_gtk/widgets.py:653
 msgid "Password:"
 msgstr "Password:"
 
-#: network_manager_gtk/widgets.py:661
+#: network_manager_gtk/widgets.py:659
 msgid "Hide Password"
 msgstr "Hide Password"
 
-#: network_manager_gtk/widgets.py:668
+#: network_manager_gtk/widgets.py:666
 msgid "Scan"
 msgstr "Scan"
 
-#: network_manager_gtk/windows.py:90
-msgid "Network Manager"
-msgstr "Network Manager"
-
 #: network_manager_gtk/windows.py:96
-#: network_manager_gtk/windows.py:303
-msgid "New Connection"
-msgstr "New Connection"
-
-#: network_manager_gtk/windows.py:120
-#, python-format
-msgid "Do you want to delete the connection  '%s' ?"
-msgstr "Do you want to delete the connection  '%s' ?"
-
-#: network_manager_gtk/windows.py:208
 msgid "Edit Connection"
 msgstr "Edit Connection"
 
-#: network_manager_gtk/windows.py:254
+#: network_manager_gtk/windows.py:142
 msgid "Apply"
 msgstr "Apply"
 
-#: network_manager_gtk/windows.py:255
-#: network_manager_gtk/windows.py:472
+#: network_manager_gtk/windows.py:143
+#: network_manager_gtk/windows.py:357
 msgid "Cancel"
 msgstr "Cancel"
 
-#: network_manager_gtk/windows.py:335
+#: network_manager_gtk/windows.py:190
+#: network_manager_gtk/__init__.py:53
+msgid "New Connection"
+msgstr "New Connection"
+
+#: network_manager_gtk/windows.py:222
 msgid "Refreshing..."
 msgstr "Refreshing..."
 
-#: network_manager_gtk/windows.py:337
+#: network_manager_gtk/windows.py:224
 msgid "Refresh"
 msgstr "Refresh"
 
-#: network_manager_gtk/windows.py:422
+#: network_manager_gtk/windows.py:307
 msgid "Save Profile"
 msgstr "Save Profile"
 
-#: network_manager_gtk/windows.py:426
+#: network_manager_gtk/windows.py:311
 msgid "New Profile"
 msgstr "New Profile"
 
-#: network_manager_gtk/windows.py:451
+#: network_manager_gtk/windows.py:336
 msgid "Other Settings"
 msgstr "Other Settings"
 
-#: network_manager_gtk/windows.py:470
+#: network_manager_gtk/windows.py:355
 msgid "Save"
 msgstr "Save"
 
-#: network_manager_gtk/windows.py:471
+#: network_manager_gtk/windows.py:356
 msgid "Save & Connect"
 msgstr "Save & Connect"
+
+#: network_manager_gtk/__init__.py:78
+#, python-format
+msgid "Do you want to delete the connection  '%s' ?"
+msgstr "Do you want to delete the connection  '%s' ?"
 
 #~ msgid "Change Password"
 #~ msgstr "Change Password"

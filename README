@@ -5,7 +5,7 @@ To use:
 
 Make mo files with
 
-    $ python make.py mo
+    $ make mo
 
 and start program
 

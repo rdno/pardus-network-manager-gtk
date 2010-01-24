@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-13 15:29+0200\n"
+"POT-Creation-Date: 2010-01-24 12:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,88 +16,92 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: network_manager_gtk/widgets.py:54
+#: network-manager-gtk.py:35
+msgid "Network Manager"
+msgstr ""
+
+#: network_manager_gtk/widgets.py:67
 msgid "Edit"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:55
+#: network_manager_gtk/widgets.py:68
 msgid "Delete"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:76
+#: network_manager_gtk/widgets.py:89
 msgid "Disconnected"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:77
+#: network_manager_gtk/widgets.py:90
 msgid "Connected"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:78
+#: network_manager_gtk/widgets.py:91
 msgid "Connecting"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:80
+#: network_manager_gtk/widgets.py:93
 msgid "Cable or device is unplugged."
 msgstr ""
 
-#: network_manager_gtk/widgets.py:177
+#: network_manager_gtk/widgets.py:185
 msgid "Name"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:178
+#: network_manager_gtk/widgets.py:186
 msgid "Quality"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:195 network_manager_gtk/widgets.py:243
+#: network_manager_gtk/widgets.py:203 network_manager_gtk/widgets.py:250
 #, python-format
 msgid "%d%%"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:203
+#: network_manager_gtk/widgets.py:211
 msgid "Scanning..."
 msgstr ""
 
-#: network_manager_gtk/widgets.py:254 network_manager_gtk/widgets.py:310
+#: network_manager_gtk/widgets.py:261 network_manager_gtk/widgets.py:315
 msgid "Connect"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:303
+#: network_manager_gtk/widgets.py:308
 msgid "Ethernet"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:412
+#: network_manager_gtk/widgets.py:414
 msgid "<b>Profile</b>"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:415
+#: network_manager_gtk/widgets.py:417
 msgid "Profile Name:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:447
+#: network_manager_gtk/widgets.py:449
 msgid "<b>Network Settings</b>"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:450
+#: network_manager_gtk/widgets.py:452
 msgid "Use DHCP"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:452
+#: network_manager_gtk/widgets.py:454
 msgid "Use Manual Settings"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:454
+#: network_manager_gtk/widgets.py:456
 msgid "Address:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:456
+#: network_manager_gtk/widgets.py:458
 msgid "Network Mask:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:458
+#: network_manager_gtk/widgets.py:460
 msgid "Default Gateway:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:465 network_manager_gtk/widgets.py:581
+#: network_manager_gtk/widgets.py:467 network_manager_gtk/widgets.py:581
 msgid "Custom"
 msgstr ""
 
@@ -113,83 +117,79 @@ msgstr ""
 msgid "Automatic"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:636
+#: network_manager_gtk/widgets.py:634
 msgid "<b>Wireless</b>"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:639
+#: network_manager_gtk/widgets.py:637
 msgid "ESSID:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:644
+#: network_manager_gtk/widgets.py:642
 msgid "Security Type:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:649 network_manager_gtk/widgets.py:654
+#: network_manager_gtk/widgets.py:647 network_manager_gtk/widgets.py:652
 msgid "No Authentication"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:655
+#: network_manager_gtk/widgets.py:653
 msgid "Password:"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:661
+#: network_manager_gtk/widgets.py:659
 msgid "Hide Password"
 msgstr ""
 
-#: network_manager_gtk/widgets.py:668
+#: network_manager_gtk/widgets.py:666
 msgid "Scan"
 msgstr ""
 
-#: network_manager_gtk/windows.py:90
-msgid "Network Manager"
-msgstr ""
-
-#: network_manager_gtk/windows.py:96 network_manager_gtk/windows.py:303
-msgid "New Connection"
-msgstr ""
-
-#: network_manager_gtk/windows.py:120
-#, python-format
-msgid "Do you want to delete the connection  '%s' ?"
-msgstr ""
-
-#: network_manager_gtk/windows.py:208
+#: network_manager_gtk/windows.py:96
 msgid "Edit Connection"
 msgstr ""
 
-#: network_manager_gtk/windows.py:254
+#: network_manager_gtk/windows.py:142
 msgid "Apply"
 msgstr ""
 
-#: network_manager_gtk/windows.py:255 network_manager_gtk/windows.py:472
+#: network_manager_gtk/windows.py:143 network_manager_gtk/windows.py:357
 msgid "Cancel"
 msgstr ""
 
-#: network_manager_gtk/windows.py:335
+#: network_manager_gtk/windows.py:190 network_manager_gtk/__init__.py:53
+msgid "New Connection"
+msgstr ""
+
+#: network_manager_gtk/windows.py:222
 msgid "Refreshing..."
 msgstr ""
 
-#: network_manager_gtk/windows.py:337
+#: network_manager_gtk/windows.py:224
 msgid "Refresh"
 msgstr ""
 
-#: network_manager_gtk/windows.py:422
+#: network_manager_gtk/windows.py:307
 msgid "Save Profile"
 msgstr ""
 
-#: network_manager_gtk/windows.py:426
+#: network_manager_gtk/windows.py:311
 msgid "New Profile"
 msgstr ""
 
-#: network_manager_gtk/windows.py:451
+#: network_manager_gtk/windows.py:336
 msgid "Other Settings"
 msgstr ""
 
-#: network_manager_gtk/windows.py:470
+#: network_manager_gtk/windows.py:355
 msgid "Save"
 msgstr ""
 
-#: network_manager_gtk/windows.py:471
+#: network_manager_gtk/windows.py:356
 msgid "Save & Connect"
+msgstr ""
+
+#: network_manager_gtk/__init__.py:78
+#, python-format
+msgid "Do you want to delete the connection  '%s' ?"
 msgstr ""
